@@ -15,6 +15,26 @@ function cloneImageData(source: ImageData): ImageData {
   return new ImageData(new Uint8ClampedArray(source.data), source.width, source.height);
 }
 
+export function calculateMse(source: ImageData, target: ImageData): number {
+  const length = Math.min(source.data.length, target.data.length);
+  let sum = 0;
+
+  for (let i = 0; i < length; i++) {
+    const diff = source.data[i] - target.data[i];
+    sum += diff * diff;
+  }
+
+  return sum / length;
+}
+
+export function calculatePsnr(source: ImageData, target: ImageData): number {
+  const mse = calculateMse(source, target);
+  if (mse === 0) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return 10 * Math.log10((255 * 255) / mse);
+}
+
 /**
  * Encrypts `message` with `password` and hides it in the least-significant
  * bits of `image`. Returns a new ImageData; the input is left untouched.
@@ -33,11 +53,12 @@ export async function hideMessage(
     );
   }
 
+  const seed = options.stegoKey ?? options.password;
   const { salt, iv, ciphertext } = await encryptMessage(options.password, plaintext);
   const packet = buildPacket({ salt, iv, ciphertext });
 
   const output = cloneImageData(image);
-  embedBytes(output.data, packet);
+  embedBytes(output.data, packet, { seed });
   return output;
 }
 
@@ -46,11 +67,12 @@ export async function hideMessage(
  * returns the original plaintext message.
  */
 export async function revealMessage(image: ImageData, options: RevealOptions): Promise<string> {
-  const headerBytes = extractBytes(image.data, FIXED_HEADER_BYTES);
+  const seed = options.stegoKey ?? options.password;
+  const headerBytes = extractBytes(image.data, FIXED_HEADER_BYTES, { seed });
   const { salt, iv, cipherLength } = parseFixedHeader(headerBytes);
 
   const totalLength = FIXED_HEADER_BYTES + cipherLength;
-  const fullPacket = extractBytes(image.data, totalLength);
+  const fullPacket = extractBytes(image.data, totalLength, { seed });
   const ciphertext = fullPacket.slice(FIXED_HEADER_BYTES);
 
   const plaintext = await decryptMessage(options.password, salt, iv, ciphertext);

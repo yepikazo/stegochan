@@ -16,8 +16,10 @@ export class StegoError extends Error {
 
 export interface HideOptions {
   password: string;
+  stegoKey?: string;
 }
 
 export interface RevealOptions {
   password: string;
+  stegoKey?: string;
 }
