@@ -2,148 +2,142 @@
 
 **C**overt **H**iding of **A**ssets in **N**oise
 
-Aplikasi web untuk menyembunyikan dan mengenkripsi pesan di dalam gambar
-menggunakan teknik steganografi LSB (Least Significant Bit). Seluruh proses
-—enkripsi, penyisipan, dan ekstraksi—berjalan sepenuhnya di sisi klien
-(browser). Tidak ada gambar atau pesan yang dikirim ke server mana pun.
+StegoChan adalah aplikasi web untuk menyembunyikan pesan di dalam citra menggunakan teknik steganografi LSB (Least Significant Bit) dengan tambahan lapisan keamanan dan validasi. Proses penyisipan, enkripsi, dan ekstraksi berjalan sepenuhnya di sisi klien dalam browser, tanpa mengirim data ke server apapun.
 
 ## Daftar Isi
 
-- [Fitur](#fitur)
+- [Fitur Utama](#fitur-utama)
 - [Cara Kerja](#cara-kerja)
-- [Tech Stack](#tech-stack)
+- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
 - [Instalasi](#instalasi)
 - [Penggunaan](#penggunaan)
 - [Format Paket Data](#format-paket-data)
+- [Kapasitas dan Evaluasi Kualitas](#kapasitas-dan-evaluasi-kualitas)
 - [Batasan](#batasan)
 - [Roadmap](#roadmap)
-- [Kontribusi](#kontribusi)
-- [Lisensi](#lisensi)
 
-## Fitur
+## Fitur Utama
 
-- **Enkripsi end-to-end** — pesan dienkripsi dengan AES-256-GCM sebelum
-  disisipkan; kunci diturunkan dari password lewat PBKDF2 (600.000 iterasi).
-- **Deteksi password salah otomatis** — autentikasi bawaan AES-GCM membuat
-  password yang keliru langsung terdeteksi, bukan menghasilkan pesan acak.
-- **Validasi kapasitas** — aplikasi menghitung kapasitas gambar dan menolak
-  pesan yang terlalu besar sebelum proses penyisipan dimulai.
-- **Header terstruktur** — setiap paket memiliki magic bytes, versi, salt,
-  IV, dan panjang payload, sehingga proses ekstraksi dapat memvalidasi data
-  dan memberi pesan error yang jelas.
-- **Zero server-side processing** — memakai Web Crypto API dan Canvas API
-  bawaan browser; tidak ada API route, tidak ada database.
-- **Ekspor lossless** — hasil selalu diunduh sebagai PNG agar setiap bit yang
-  disisipkan tetap utuh.
+- **LSB steganography pada citra PNG/BMP** — pesan disisipkan ke bit paling tidak signifikan dari piksel gambar.
+- **Enkripsi end-to-end** — pesan dienkripsi menggunakan AES-GCM sebelum disisipkan ke dalam cover image. Password digunakan untuk menghasilkan kunci dan juga seed urutan piksel.
+- **Header penanda panjang pesan** — setiap payload memiliki informasi struktur yang memungkinkan proses ekstraksi membaca panjang data secara aman sebelum dekripsi.
+- **Posisi piksel diacak menggunakan PRNG** — urutan embedding dan extraction berbasis seed dari stego-key, sehingga traversal piksel tidak lagi linear.
+- **Validasi kapasitas otomatis** — aplikasi menghitung kapasitas gambar dan menolak payload yang melebihi batas sebelum proses penyisipan dimulai.
+- **Tampilan cover dan stego berdampingan** — hasil penyisipan dapat dilihat langsung dalam satu tampilan agar pengguna bisa membandingkan perubahan.
+- **Metrik kualitas visual** — aplikasi menampilkan MSE dan PSNR untuk membandingkan cover dan stego image.
+- **Password toggle Show/Hide** — field password bisa ditampilkan atau disembunyikan dengan teks "Show" / "Hide" tanpa ikon visual.
+- **Zero server-side processing** — seluruh proses memakai Web Crypto API dan Canvas API bawaan browser.
 
 ## Cara Kerja
 
-```
-Sisipkan:  Pesan → Enkripsi (AES-256-GCM) → Bangun Header → Sisipkan ke LSB → Unduh PNG
-Ungkap:    Gambar PNG → Baca Header → Ekstrak Ciphertext → Dekripsi → Pesan
+```text
+Sisipkan:  Pesan → Enkripsi AES-GCM → Header + Payload → PRNG order piksel → LSB embed → PNG output
+Ungkap:    Gambar stego → PRNG order piksel → Baca header → Ekstrak payload → Dekripsi → Pesan asli
 ```
 
-1. **Enkripsi.** Pesan dienkripsi dengan AES-256-GCM. Kunci diturunkan dari
-   password pengguna menggunakan PBKDF2-SHA256.
-2. **Pembungkusan.** Ciphertext dibungkus bersama metadata (salt, IV,
-   panjang data) menjadi satu paket biner.
-3. **Penyisipan.** Setiap bit paket ditulis ke bit terakhir (LSB) kanal
-   merah, hijau, dan biru pada tiap piksel secara berurutan. Kanal alfa
-   tidak disentuh.
-4. **Ekspor.** Gambar hasil diekspor sebagai PNG—format lossless—agar
-   perubahan pada bit tidak hilang akibat kompresi.
-5. **Ekstraksi.** Proses dibalik: baca header untuk mengetahui panjang data,
-   ambil ciphertext dari LSB, lalu dekripsi dengan password yang sama.
+1. **Persiapan pesan** — teks diubah ke byte dan dienkripsi dengan password.
+2. **Pembuatan paket** — data dienkripsi dikemas bersama metadata seperti salt, IV, dan panjang payload untuk keperluan ekstraksi yang aman.
+3. **Urutan piksel teracak** — `stegoKey` dipakai sebagai seed untuk menciptakan urutan piksel yang berbeda-beda, bukan sekadar traversal linear.
+4. **Penyisipan LSB** — bit payload ditulis ke bit paling tidak signifikan piksel yang sudah diacak.
+5. **Ekstraksi** — proses dibalik: ambil bit dari posisi yang sama, baca header, ekstrak ciphertext, lalu dekripsi menggunakan password yang sama.
+6. **Validasi** — aplikasi mengecek kapasitas, menampilkan hasil visual, serta mengukur kualitas stego image dengan MSE dan PSNR.
 
-## Tech Stack
+## Teknologi yang Digunakan
 
 | Lapisan | Teknologi |
 |---|---|
 | Framework | Next.js (App Router) + TypeScript |
-| Styling | CSS custom (design tokens) |
-| Kriptografi | Web Crypto API — AES-256-GCM, PBKDF2 |
-| Pengolahan gambar | Canvas API (`getImageData` / `putImageData`) |
-| Font | `next/font/google` — Space Grotesk, Inter, IBM Plex Mono |
+| Interface | React 19 + CSS custom |
+| Kriptografi | Web Crypto API — AES-GCM, PBKDF2 |
+| Manipulasi citra | Canvas API + ImageData |
+| Steganografi | LSB dengan urutan piksel berbasis PRNG |
+| Evaluasi kualitas | MSE dan PSNR |
 
-Tidak ada dependency eksternal untuk fungsi inti; semua kriptografi dan
-pengolahan gambar memakai API bawaan browser.
+Semua proses inti dilakukan di browser tanpa backend atau database.
 
 ## Instalasi
 
-**Prasyarat:** Node.js 20.9 atau lebih baru.
+Prasyarat: Node.js 20 atau versi yang lebih baru.
 
 ```bash
-git clone <url-repo-anda>
+git clone <url-repository>
 cd stegochan
 npm install
 npm run dev
 ```
 
-Buka `http://localhost:3000`.
+Buka alamat berikut di browser:
+
+```text
+http://localhost:3000
+```
 
 ## Penggunaan
 
-### Menyisipkan pesan
+### 1. Menyisipkan pesan
 
-1. Buka halaman **Sembunyikan**.
-2. Unggah gambar sampul (cover image).
-3. Tulis pesan yang ingin disembunyikan.
-4. Masukkan password.
-5. Unduh gambar PNG hasil.
+1. Buka halaman **Embed**.
+2. Unggah cover image.
+3. Masukkan pesan yang ingin disembunyikan.
+4. Masukkan password / stego-key.
+5. Tekan **Embed pesan**.
+6. Lihat hasil cover dan stego secara berdampingan.
+7. Unduh output dalam format PNG.
 
-### Mengungkap pesan
+### 2. Mengekstraksi pesan
 
-1. Buka halaman **Ungkap**.
-2. Unggah gambar stego.
-3. Masukkan password yang sama dengan saat penyisipan.
-4. Pesan akan ditampilkan jika password benar dan data tidak rusak.
+1. Buka halaman **Extract**.
+2. Unggah stego image.
+3. Masukkan password yang sama saat proses embedding.
+4. Tekan **Extract pesan**.
+5. Aplikasi akan menampilkan pesan asli jika password dan data valid.
+
+### 3. Password toggle
+
+Pada kedua halaman, field password dapat diubah mode tampilannya dengan tombol **Show** dan **Hide**. Ini memudahkan pengguna untuk melihat atau menyembunyikan input password tanpa ikon mata.
 
 ## Format Paket Data
 
-Data yang disisipkan mengikuti struktur biner berikut:
+Payload yang disisipkan mengikuti struktur biner yang terdefinisi untuk menjaga integritas dan keandalan ekstraksi.
 
 | Field | Panjang | Keterangan |
 |---|---|---|
-| Magic bytes | 4 byte | Penanda `"STG1"` |
-| Versi | 1 byte | Versi format paket |
-| Salt | 16 byte | Untuk derivasi kunci PBKDF2 |
-| IV | 12 byte | Nonce untuk AES-GCM |
-| Panjang ciphertext | 4 byte | Unsigned 32-bit, big-endian |
-| Ciphertext | variabel | Pesan terenkripsi + auth tag GCM (16 byte) |
+| Magic bytes | 4 byte | Penanda format paket |
+| Versi | 1 byte | Format versi data |
+| Salt | 16 byte | Digunakan untuk derivasi kunci PBKDF2 |
+| IV | 12 byte | Nonce AES-GCM |
+| Panjang ciphertext | 4 byte | Ukuran payload terenkripsi |
+| Ciphertext | variabel | Data terenkripsi + autentikasi tag |
+
+Dengan format ini, proses ekstraksi dapat membaca header terlebih dahulu, memastikan panjang data, lalu melakukan dekripsi jika password benar.
+
+## Kapasitas dan Evaluasi Kualitas
+
+- **Kapasitas maksimum** dihitung berdasarkan dimensi gambar dan jumlah bit yang dapat digunakan untuk menyisipkan payload.
+- **Validasi otomatis** menolak pesan yang melebihi kapasitas gambar yang dipilih.
+- **Analisis kualitas** dilakukan dengan dua metrik utama:
+  - MSE (Mean Squared Error)
+  - PSNR (Peak Signal-to-Noise Ratio)
+- **Tampilan hasil** membandingkan cover image dan stego image secara langsung, sehingga pengguna dapat mengevaluasi perubahan visual dengan lebih mudah.
 
 ## Batasan
 
-- **Hanya PNG yang aman digunakan sebagai output.** Data akan rusak jika
-  gambar hasil dikompresi ulang secara lossy (mis. diunggah ke WhatsApp,
-  Instagram, atau platform lain yang memampatkan gambar).
-- **Kapasitas terbatas oleh resolusi gambar.** Kapasitas maksimum kira-kira
-  `(lebar × tinggi × 3) / 8` byte, dikurangi overhead header.
-- **Belum tahan terhadap steganalisis lanjutan.** Urutan penyisipan saat ini
-  masih sekuensial (belum diacak berdasarkan password), sehingga secara
-  teoretis lebih mudah dianalisis dibanding skema LSB adaptif.
-- **Dimensi gambar dibatasi** hingga 4000×4000 piksel untuk menjaga performa
-  di sisi browser.
+- **Output terbaik berupa PNG** karena format ini bersifat lossless dan menjaga integritas bit LSB.
+- **Penggunaan JPEG tidak disarankan untuk hasil akhir** karena kompresi lossy dapat merusak bit yang disisipkan.
+- **Kapasitas terbatas** oleh resolusi gambar. Semakin besar ukuran citra, semakin banyak data yang bisa disembunyikan.
+- **Keamanan bergantung pada password** — password yang salah akan menghasilkan dekripsi yang gagal dan mencegah pembacaan payload asli.
+- **Steganalisis lanjutan masih terbatas** — proteksi saat ini berfokus pada enkripsi dan urutan piksel acak, bukan pada skema adaptif yang lebih kompleks.
 
 ## Roadmap
 
-- [ ] Penyebaran posisi piksel acak (PRNG yang di-seed dari password)
-- [ ] Pemrosesan di Web Worker untuk gambar berukuran besar
-- [ ] Dukungan penyisipan file (bukan hanya teks), dengan kompresi payload
-- [ ] Unit test dan property test (Vitest + fast-check)
-- [ ] Metrik kualitas visual (PSNR/SSIM) antara gambar asli dan gambar stego
-- [ ] Dukungan domain JPEG (DCT) sebagai alternatif LSB
-
-## Kontribusi
-
-1. Fork repositori ini dan buat branch baru: `feat/nama-fitur`.
-2. Pastikan `npm run lint` dan `npm run build` berjalan tanpa error.
-3. Ajukan Pull Request dengan deskripsi perubahan yang jelas.
-
-Perubahan pada kontrak antarmuka di `lib/stego/types.ts` sebaiknya
-didiskusikan terlebih dahulu sebelum diimplementasikan, karena berdampak
-pada seluruh lapisan yang bergantung padanya.
-
-## Lisensi
-
-Belum ditentukan — tambahkan lisensi pilihan Anda (mis. MIT) sebelum
-proyek ini dipublikasikan.
+- [x] LSB steganography dengan enkripsi payload
+- [x] Header untuk panjang data dan validasi ekstraksi
+- [x] Urutan piksel acak berbasis PRNG dan stego-key
+- [x] Kapasitas dan validasi ukuran pesan
+- [x] Tampilan cover dan stego berdampingan
+- [x] Metrik MSE dan PSNR
+- [x] Toggle password dengan teks Show/Hide
+- [ ] Uji coba lebih lanjut pada beberapa citra dan ukuran payload
+- [ ] Analisis histogram dan perbandingan visual lanjutan
+- [ ] Uji ketahanan terhadap format lossy seperti JPEG
+- [ ] Fitur tambahan seperti LSB adaptif atau analisis steganalisis lanjutan
