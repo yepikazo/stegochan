@@ -1,124 +1,149 @@
 # StegoChan
 
-StegoChan adalah aplikasi steganografi modern yang memungkinkan Anda menyembunyikan pesan rahasia di dalam gambar tanpa mengirim data ke server. Seluruh proses enkripsi, penyisipan, dan pengungkapan pesan dilakukan langsung di browser pengguna.
+**C**overt **H**iding of **A**ssets in **N**oise
 
-Dengan pendekatan keamanan berbasis browser, StegoChan menempatkan kontrol penuh kepada pengguna: tidak ada upload ke backend, tidak ada penyimpanan server, dan tidak ada data yang dikirim ke pihak ketiga.
+Aplikasi web untuk menyembunyikan dan mengenkripsi pesan di dalam gambar
+menggunakan teknik steganografi LSB (Least Significant Bit). Seluruh proses
+—enkripsi, penyisipan, dan ekstraksi—berjalan sepenuhnya di sisi klien
+(browser). Tidak ada gambar atau pesan yang dikirim ke server mana pun.
 
-## Fitur utama
+## Daftar Isi
 
-- Enkripsi pesan menggunakan password personal
-- Penyisipan pesan ke bit paling rendah (LSB) pada gambar
-- Ekstraksi pesan dari gambar stego dengan password yang sama
-- Proses berjalan sepenuhnya di sisi klien
-- Mendukung ekspor hasil gambar dalam format PNG untuk menjaga integritas data
-- Antarmuka yang sederhana, modern, dan fokus pada keamanan
+- [Fitur](#fitur)
+- [Cara Kerja](#cara-kerja)
+- [Tech Stack](#tech-stack)
+- [Instalasi](#instalasi)
+- [Penggunaan](#penggunaan)
+- [Format Paket Data](#format-paket-data)
+- [Batasan](#batasan)
+- [Roadmap](#roadmap)
+- [Kontribusi](#kontribusi)
+- [Lisensi](#lisensi)
 
-## Cara kerja aplikasi
+## Fitur
 
-StegoChan bekerja dengan prinsip steganografi:
+- **Enkripsi end-to-end** — pesan dienkripsi dengan AES-256-GCM sebelum
+  disisipkan; kunci diturunkan dari password lewat PBKDF2 (600.000 iterasi).
+- **Deteksi password salah otomatis** — autentikasi bawaan AES-GCM membuat
+  password yang keliru langsung terdeteksi, bukan menghasilkan pesan acak.
+- **Validasi kapasitas** — aplikasi menghitung kapasitas gambar dan menolak
+  pesan yang terlalu besar sebelum proses penyisipan dimulai.
+- **Header terstruktur** — setiap paket memiliki magic bytes, versi, salt,
+  IV, dan panjang payload, sehingga proses ekstraksi dapat memvalidasi data
+  dan memberi pesan error yang jelas.
+- **Zero server-side processing** — memakai Web Crypto API dan Canvas API
+  bawaan browser; tidak ada API route, tidak ada database.
+- **Ekspor lossless** — hasil selalu diunduh sebagai PNG agar setiap bit yang
+  disisipkan tetap utuh.
 
-1. Pesan Anda dienkripsi terlebih dahulu.
-2. Data hasil enkripsi disisipkan ke dalam piksel gambar dengan teknik LSB.
-3. Gambar hasil penyisipan tetap terlihat normal secara visual.
-4. Untuk membuka pesan, pengguna cukup mengunggah gambar stego dan memasukkan password yang sama.
+## Cara Kerja
 
-> penting: file gambar yang sudah dikompres ulang oleh aplikasi lain seperti WhatsApp, Instagram, atau platform media sosial bisa merusak data tersembunyi di dalamnya. Gunakan file PNG asli yang dihasilkan oleh aplikasi ini.
+```
+Sisipkan:  Pesan → Enkripsi (AES-256-GCM) → Bangun Header → Sisipkan ke LSB → Unduh PNG
+Ungkap:    Gambar PNG → Baca Header → Ekstrak Ciphertext → Dekripsi → Pesan
+```
 
-## Persyaratan
+1. **Enkripsi.** Pesan dienkripsi dengan AES-256-GCM. Kunci diturunkan dari
+   password pengguna menggunakan PBKDF2-SHA256.
+2. **Pembungkusan.** Ciphertext dibungkus bersama metadata (salt, IV,
+   panjang data) menjadi satu paket biner.
+3. **Penyisipan.** Setiap bit paket ditulis ke bit terakhir (LSB) kanal
+   merah, hijau, dan biru pada tiap piksel secara berurutan. Kanal alfa
+   tidak disentuh.
+4. **Ekspor.** Gambar hasil diekspor sebagai PNG—format lossless—agar
+   perubahan pada bit tidak hilang akibat kompresi.
+5. **Ekstraksi.** Proses dibalik: baca header untuk mengetahui panjang data,
+   ambil ciphertext dari LSB, lalu dekripsi dengan password yang sama.
 
-- Node.js 18+
-- npm atau package manager lain yang kompatibel
-- Browser modern (Chrome, Edge, Firefox, Safari)
+## Tech Stack
+
+| Lapisan | Teknologi |
+|---|---|
+| Framework | Next.js (App Router) + TypeScript |
+| Styling | CSS custom (design tokens) |
+| Kriptografi | Web Crypto API — AES-256-GCM, PBKDF2 |
+| Pengolahan gambar | Canvas API (`getImageData` / `putImageData`) |
+| Font | `next/font/google` — Space Grotesk, Inter, IBM Plex Mono |
+
+Tidak ada dependency eksternal untuk fungsi inti; semua kriptografi dan
+pengolahan gambar memakai API bawaan browser.
 
 ## Instalasi
 
-Clone repositori ini:
+**Prasyarat:** Node.js 20.9 atau lebih baru.
 
 ```bash
-git clone https://github.com/your-username/stegochan.git
+git clone <url-repo-anda>
 cd stegochan
-```
-
-Install dependency:
-
-```bash
 npm install
-```
-
-Jalankan aplikasi dalam mode pengembangan:
-
-```bash
 npm run dev
 ```
 
-Buka browser dan akses:
+Buka `http://localhost:3000`.
 
-```text
-http://localhost:3000
-```
+## Penggunaan
 
-## Tutorial penggunaan aplikasi
+### Menyisipkan pesan
 
-### 1. Menyembunyikan pesan ke dalam gambar
+1. Buka halaman **Sembunyikan**.
+2. Unggah gambar sampul (cover image).
+3. Tulis pesan yang ingin disembunyikan.
+4. Masukkan password.
+5. Unduh gambar PNG hasil.
 
-1. Buka halaman utama aplikasi.
-2. Klik menu "Sembunyikan".
-3. Pilih file gambar cover yang ingin digunakan sebagai media penyembunyian.
-4. Tulis pesan rahasia yang ingin disembunyikan pada kolom teks.
-5. Masukkan password untuk mengenkripsi pesan.
-6. Tekan tombol "Sembunyikan pesan".
-7. Tunggu proses embedding selesai.
-8. Lihat pratinjau hasil stego dan klik "Unduh PNG" untuk menyimpan file gambar yang berisi pesan tersembunyi.
+### Mengungkap pesan
 
-### 2. Mengungkap pesan dari gambar stego
+1. Buka halaman **Ungkap**.
+2. Unggah gambar stego.
+3. Masukkan password yang sama dengan saat penyisipan.
+4. Pesan akan ditampilkan jika password benar dan data tidak rusak.
 
-1. Buka menu "Ungkap".
-2. Unggah gambar hasil stego yang sudah dibuat sebelumnya.
-3. Masukkan password yang sama dengan saat proses penyisipan.
-4. Klik tombol "Ungkap pesan".
-5. Pesan rahasia akan muncul di layar setelah proses dekripsi selesai.
+## Format Paket Data
 
-### 3. Tips penggunaan yang aman
+Data yang disisipkan mengikuti struktur biner berikut:
 
-- Gunakan password yang kuat dan unik.
-- Simpan password di tempat yang aman.
-- Hindari mengunggah gambar yang sudah dikompres ulang ke media sosial sebelum proses ekstraksi.
-- Selalu gunakan file PNG hasil ekspor dari aplikasi ini.
-- Jangan membagikan password sekaligus dengan file gambar stego.
+| Field | Panjang | Keterangan |
+|---|---|---|
+| Magic bytes | 4 byte | Penanda `"STG1"` |
+| Versi | 1 byte | Versi format paket |
+| Salt | 16 byte | Untuk derivasi kunci PBKDF2 |
+| IV | 12 byte | Nonce untuk AES-GCM |
+| Panjang ciphertext | 4 byte | Unsigned 32-bit, big-endian |
+| Ciphertext | variabel | Pesan terenkripsi + auth tag GCM (16 byte) |
 
-## Struktur proyek
+## Batasan
 
-```text
-stegochan/
-├── app/
-│   ├── embed/
-│   ├── extract/
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-├── hooks/
-├── lib/
-├── public/
-├── package.json
-├── next.config.ts
-├── tsconfig.json
-├── README.md
-└── eslint.config.mjs
-```
+- **Hanya PNG yang aman digunakan sebagai output.** Data akan rusak jika
+  gambar hasil dikompresi ulang secara lossy (mis. diunggah ke WhatsApp,
+  Instagram, atau platform lain yang memampatkan gambar).
+- **Kapasitas terbatas oleh resolusi gambar.** Kapasitas maksimum kira-kira
+  `(lebar × tinggi × 3) / 8` byte, dikurangi overhead header.
+- **Belum tahan terhadap steganalisis lanjutan.** Urutan penyisipan saat ini
+  masih sekuensial (belum diacak berdasarkan password), sehingga secara
+  teoretis lebih mudah dianalisis dibanding skema LSB adaptif.
+- **Dimensi gambar dibatasi** hingga 4000×4000 piksel untuk menjaga performa
+  di sisi browser.
 
-## Catatan keamanan
+## Roadmap
 
-StegoChan dirancang untuk kebutuhan penyembunyian pesan yang sederhana, aman secara lokal, dan tidak bergantung pada server. Namun, penggunaan terbaik tetap pada tanggung jawab pengguna. Pastikan:
+- [ ] Penyebaran posisi piksel acak (PRNG yang di-seed dari password)
+- [ ] Pemrosesan di Web Worker untuk gambar berukuran besar
+- [ ] Dukungan penyisipan file (bukan hanya teks), dengan kompresi payload
+- [ ] Unit test dan property test (Vitest + fast-check)
+- [ ] Metrik kualitas visual (PSNR/SSIM) antara gambar asli dan gambar stego
+- [ ] Dukungan domain JPEG (DCT) sebagai alternatif LSB
 
-- password tidak mudah ditebak
-- file gambar tidak dipindahkan ke layanan yang melakukan kompresi
-- pesan sensitif tidak dibagikan dalam bentuk plaintext di luar saluran aman
+## Kontribusi
+
+1. Fork repositori ini dan buat branch baru: `feat/nama-fitur`.
+2. Pastikan `npm run lint` dan `npm run build` berjalan tanpa error.
+3. Ajukan Pull Request dengan deskripsi perubahan yang jelas.
+
+Perubahan pada kontrak antarmuka di `lib/stego/types.ts` sebaiknya
+didiskusikan terlebih dahulu sebelum diimplementasikan, karena berdampak
+pada seluruh lapisan yang bergantung padanya.
 
 ## Lisensi
 
-Proyek ini dibuat untuk kebutuhan demonstrasi dan penggunaan pribadi. Silakan sesuaikan lisensi sesuai kebutuhan pengembangan Anda.
-
-## Tentang proyek
-
-StegoChan menghadirkan kombinasi antara keamanan, privasi, dan kemudahan dalam satu aplikasi browser. Dirancang untuk pengguna yang menginginkan cara modern dalam menyembunyikan pesan tanpa meninggalkan jejak di server.
+Belum ditentukan — tambahkan lisensi pilihan Anda (mis. MIT) sebelum
+proyek ini dipublikasikan.
