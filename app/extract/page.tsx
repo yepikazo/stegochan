@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Alert from "@/components/Alert";
 import Dropzone from "@/components/Dropzone";
 import { useImageSelection } from "@/hooks/useImageSelection";
-import { revealMessage } from "@/lib/stego";
+import { imageDataToPreviewUrl } from "@/lib/image";
+import { extractLsbPlane, revealMessage } from "@/lib/stego";
 
 export default function ExtractPage() {
   const { imageData, previewUrl, error, setError, loadFile } = useImageSelection();
@@ -13,6 +14,12 @@ export default function ExtractPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const lsbPreviewUrl = useMemo(() => {
+    if (!imageData) return null;
+    const plane = extractLsbPlane(imageData.data, imageData.width, imageData.height);
+    return imageDataToPreviewUrl(plane);
+  }, [imageData]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +87,17 @@ export default function ExtractPage() {
           {loading ? "Membongkar..." : "Ungkap pesan"}
         </button>
       </form>
+
+      {lsbPreviewUrl && (
+        <div className="mt-8 rounded-xl border border-[#33363f] bg-[#1d1f26] p-7">
+          <p className="mb-4 text-[0.85rem] text-[#93969f]">Bidang LSB gambar terpilih</p>
+          <img
+            src={lsbPreviewUrl}
+            alt="Bidang LSB gambar terpilih"
+            className="max-h-[220px] w-full rounded-md border border-[#33363f] bg-[#111318] object-contain"
+          />
+        </div>
+      )}
 
       {message !== null && (
         <div className="mt-8 rounded-xl border border-[#33363f] bg-[#1d1f26] p-7">

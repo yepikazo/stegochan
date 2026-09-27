@@ -4,9 +4,18 @@ import { useMemo, useState } from "react";
 
 import Alert from "@/components/Alert";
 import Dropzone from "@/components/Dropzone";
+import HistogramChart from "@/components/HistogramChart";
 import { useImageSelection } from "@/hooks/useImageSelection";
 import { imageDataToPngBlob, imageDataToPreviewUrl } from "@/lib/image";
-import { calculateMse, calculatePsnr, formatBytes, getUsableCapacityBytes, hideMessage } from "@/lib/stego";
+import {
+  calculateMse,
+  calculatePsnr,
+  computeHistogram,
+  extractLsbPlane,
+  formatBytes,
+  getUsableCapacityBytes,
+  hideMessage,
+} from "@/lib/stego";
 
 export default function EmbedPage() {
   const { imageData, previewUrl, error, setError, loadFile } = useImageSelection();
@@ -17,6 +26,8 @@ export default function EmbedPage() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
   const [metrics, setMetrics] = useState<{ mse: number; psnr: number } | null>(null);
+  const [lsbUrls, setLsbUrls] = useState<{ cover: string; stego: string } | null>(null);
+  const [histograms, setHistograms] = useState<{ cover: { r: number[]; g: number[]; b: number[] }; stego: { r: number[]; g: number[]; b: number[] } } | null>(null);
 
   const capacity = useMemo(
     () => (imageData ? getUsableCapacityBytes(imageData.width, imageData.height) : 0),
@@ -35,13 +46,25 @@ export default function EmbedPage() {
     setError(null);
     setResultUrl(null);
     setMetrics(null);
+    setLsbUrls(null);
+    setHistograms(null);
 
     try {
       const stego = await hideMessage(imageData, message, { password, stegoKey: password });
       const mse = calculateMse(imageData, stego);
       const psnr = calculatePsnr(imageData, stego);
+      const coverPlane = extractLsbPlane(imageData.data, imageData.width, imageData.height);
+      const stegoPlane = extractLsbPlane(stego.data, stego.width, stego.height);
       setMetrics({ mse, psnr });
       setResultUrl(imageDataToPreviewUrl(stego));
+      setLsbUrls({
+        cover: imageDataToPreviewUrl(coverPlane),
+        stego: imageDataToPreviewUrl(stegoPlane),
+      });
+      setHistograms({
+        cover: computeHistogram(imageData),
+        stego: computeHistogram(stego),
+      });
       setResultBlob(await imageDataToPngBlob(stego));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyembunyikan pesan.");
@@ -155,6 +178,67 @@ export default function EmbedPage() {
               <div className="flex flex-col gap-2 rounded-md border border-[#33363f] bg-[#262933] p-4">
                 <span className="text-[0.78rem] uppercase tracking-[0.08em] text-[#93969f]">PSNR</span>
                 <strong className="text-[1.1rem] text-white">{metrics.psnr.toFixed(2)} dB</strong>
+              </div>
+            </div>
+          )}
+
+          {lsbUrls && (
+            <div className="mt-8 border-t border-[#33363f] pt-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-[1.05rem] font-semibold text-white">Steganalisis Visual</h2>
+              </div>
+              <p className="mb-4 text-sm leading-6 text-[#93969f]">
+                Bidang LSB cover biasanya masih menampilkan pola/tekstur yang lebih halus, sedangkan
+                bidang LSB stego cenderung terlihat lebih acak karena bit data tersembunyi telah
+                mengubah pola bit paling tidak signifikan.
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <p className="text-[0.85rem] text-[#93969f]">LSB cover</p>
+                  <img
+                    src={lsbUrls.cover}
+                    alt="Bidang LSB cover"
+                    className="max-h-[220px] w-full rounded-md border border-[#33363f] bg-[#111318] object-contain"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-[0.85rem] text-[#93969f]">LSB stego</p>
+                  <img
+                    src={lsbUrls.stego}
+                    alt="Bidang LSB stego"
+                    className="max-h-[220px] w-full rounded-md border border-[#33363f] bg-[#111318] object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {histograms && (
+            <div className="mt-8 border-t border-[#33363f] pt-6">
+              <h2 className="mb-2 text-[1.05rem] font-semibold text-white">Perbandingan Histogram</h2>
+              <p className="mb-5 text-sm leading-6 text-[#93969f]">
+                Histogram cover dan stego yang nyaris identik menandakan penyisipan LSB tidak
+                meninggalkan jejak statistik yang mencolok.
+              </p>
+
+              <div className="space-y-5">
+                <div>
+                  <p className="mb-2 text-[0.85rem] text-[#93969f]">Cover image</p>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <HistogramChart title="R" data={histograms.cover.r} color="red" />
+                    <HistogramChart title="G" data={histograms.cover.g} color="green" />
+                    <HistogramChart title="B" data={histograms.cover.b} color="blue" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-[0.85rem] text-[#93969f]">Stego image</p>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <HistogramChart title="R" data={histograms.stego.r} color="red" />
+                    <HistogramChart title="G" data={histograms.stego.g} color="green" />
+                    <HistogramChart title="B" data={histograms.stego.b} color="blue" />
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -5,7 +5,9 @@ import { getUsableCapacityBytes } from "./capacity";
 import { HideOptions, RevealOptions, StegoError } from "./types";
 
 export { getRawCapacityBytes, getUsableCapacityBytes, formatBytes } from "./capacity";
+export { computeHistogram } from "./histogram";
 export { StegoError } from "./types";
+export { extractLsbPlane } from "./lsb-plane";
 export type { StegoErrorCode, HideOptions, RevealOptions } from "./types";
 
 const encoder = new TextEncoder();
