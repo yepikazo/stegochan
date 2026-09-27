@@ -16,22 +16,30 @@ import {
   getUsableCapacityBytes,
   hideMessage,
 } from "@/lib/stego";
+import type { BitsPerChannel } from "@/lib/stego/types";
 
 export default function EmbedPage() {
   const { imageData, previewUrl, error, setError, loadFile } = useImageSelection();
   const [message, setMessage] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [lsbMode, setLsbMode] = useState<BitsPerChannel>(1);
   const [loading, setLoading] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
   const [metrics, setMetrics] = useState<{ mse: number; psnr: number } | null>(null);
   const [lsbUrls, setLsbUrls] = useState<{ cover: string; stego: string } | null>(null);
   const [histograms, setHistograms] = useState<{ cover: { r: number[]; g: number[]; b: number[] }; stego: { r: number[]; g: number[]; b: number[] } } | null>(null);
+  const [tradeoff, setTradeoff] = useState<{
+    capacity1bit: number;
+    capacitySelected: number;
+    psnr1bit: number;
+    psnrSelected: number;
+  } | null>(null);
 
   const capacity = useMemo(
-    () => (imageData ? getUsableCapacityBytes(imageData.width, imageData.height) : 0),
-    [imageData]
+    () => (imageData ? getUsableCapacityBytes(imageData.width, imageData.height, lsbMode) : 0),
+    [imageData, lsbMode]
   );
   const messageBytes = useMemo(() => new TextEncoder().encode(message).length, [message]);
   const overLimit = imageData ? messageBytes > capacity : false;
@@ -50,12 +58,28 @@ export default function EmbedPage() {
     setHistograms(null);
 
     try {
-      const stego = await hideMessage(imageData, message, { password, stegoKey: password });
+      const stego = await hideMessage(imageData, message, {
+        password,
+        stegoKey: password,
+        bitsPerChannel: lsbMode,
+      });
+      const baseline = await hideMessage(imageData, message, {
+        password,
+        stegoKey: password,
+        bitsPerChannel: 1,
+      });
       const mse = calculateMse(imageData, stego);
       const psnr = calculatePsnr(imageData, stego);
+      const baselinePsnr = calculatePsnr(imageData, baseline);
       const coverPlane = extractLsbPlane(imageData.data, imageData.width, imageData.height);
       const stegoPlane = extractLsbPlane(stego.data, stego.width, stego.height);
       setMetrics({ mse, psnr });
+      setTradeoff({
+        capacity1bit: getUsableCapacityBytes(imageData.width, imageData.height, 1),
+        capacitySelected: getUsableCapacityBytes(imageData.width, imageData.height, lsbMode),
+        psnr1bit: baselinePsnr,
+        psnrSelected: psnr,
+      });
       setResultUrl(imageDataToPreviewUrl(stego));
       setLsbUrls({
         cover: imageDataToPreviewUrl(coverPlane),
@@ -105,6 +129,36 @@ export default function EmbedPage() {
               {imageData.width}&times;{imageData.height}px &middot; kapasitas {formatBytes(capacity)}
             </p>
           )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Mode LSB</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2, 3].map((mode) => (
+              <label
+                key={mode}
+                className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm transition ${
+                  lsbMode === mode
+                    ? "border-[#e8a33d] bg-[#2e2415] text-[#f4c46d]"
+                    : "border-[#33363f] bg-[#1d1f26] text-[#ecedf1]"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="lsbMode"
+                  value={mode}
+                  checked={lsbMode === mode}
+                  onChange={() => setLsbMode(mode as BitsPerChannel)}
+                  className="sr-only"
+                />
+                {mode}-bit
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-[0.75rem] leading-5 text-[#93969f]">
+            1-bit paling aman secara visual, 2-bit memberi kapasitas 2×, 3-bit memberi kapasitas 3×
+            namun kualitas visual lebih menurun.
+          </p>
         </div>
 
         <div>
@@ -178,6 +232,36 @@ export default function EmbedPage() {
               <div className="flex flex-col gap-2 rounded-md border border-[#33363f] bg-[#262933] p-4">
                 <span className="text-[0.78rem] uppercase tracking-[0.08em] text-[#93969f]">PSNR</span>
                 <strong className="text-[1.1rem] text-white">{metrics.psnr.toFixed(2)} dB</strong>
+              </div>
+            </div>
+          )}
+
+          {tradeoff && (
+            <div className="mt-8 border-t border-[#33363f] pt-6">
+              <h2 className="mb-2 text-[1.05rem] font-semibold text-white">Analisis Trade-off</h2>
+              <p className="mb-4 text-sm leading-6 text-[#93969f]">
+                Mode yang lebih tinggi meningkatkan kapasitas payload, tetapi menurunkan kualitas visual,
+                yang terlihat dari penurunan PSNR dibanding mode 1-bit.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-md border border-[#33363f] bg-[#262933] p-4">
+                  <p className="text-[0.75rem] uppercase tracking-[0.08em] text-[#93969f]">Kapasitas</p>
+                  <p className="mt-3 text-lg font-semibold text-white">
+                    {formatBytes(tradeoff.capacitySelected)}
+                  </p>
+                  <p className="mt-1 text-sm text-[#93969f]">
+                    1-bit: {formatBytes(tradeoff.capacity1bit)}
+                  </p>
+                </div>
+                <div className="rounded-md border border-[#33363f] bg-[#262933] p-4">
+                  <p className="text-[0.75rem] uppercase tracking-[0.08em] text-[#93969f]">PSNR</p>
+                  <p className="mt-3 text-lg font-semibold text-white">
+                    {tradeoff.psnrSelected.toFixed(2)} dB
+                  </p>
+                  <p className="mt-1 text-sm text-[#93969f]">
+                    1-bit: {tradeoff.psnr1bit.toFixed(2)} dB
+                  </p>
+                </div>
               </div>
             </div>
           )}

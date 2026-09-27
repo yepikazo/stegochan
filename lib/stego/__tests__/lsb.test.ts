@@ -18,6 +18,27 @@ describe("LSB channel embedding", () => {
     expect(restored).toEqual(payload);
   });
 
+  it.each([2, 3] as const)(
+    "embedBytes and extractBytes round-trip with %i bits per channel",
+    (bitsPerChannel) => {
+      const payload = Uint8Array.from([0x00, 0x12, 0x34, 0x56, 0xff, 0xab, 0xcd, 0xef, 0x10, 0x20]);
+      const totalBits = payload.length * 8;
+      const neededPixels = Math.ceil(totalBits / (3 * bitsPerChannel));
+      const pixels = new Uint8ClampedArray((neededPixels + 4) * 4);
+
+      const embedded = embedBytes(new Uint8ClampedArray(pixels), payload, {
+        seed: `bits-${bitsPerChannel}`,
+        bitsPerChannel,
+      });
+      const restored = extractBytes(embedded, payload.length, {
+        seed: `bits-${bitsPerChannel}`,
+        bitsPerChannel,
+      });
+
+      expect(restored).toEqual(payload);
+    }
+  );
+
   it("different seed changes the channel order and extraction fails with the wrong order", () => {
     const payload = Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     const pixels = new Uint8ClampedArray(128 * 4);

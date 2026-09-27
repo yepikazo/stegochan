@@ -1,6 +1,14 @@
 import { decryptMessage, encryptMessage } from "./crypto";
 import { embedBytes, extractBytes } from "./lsb";
-import { buildPacket, FIXED_HEADER_BYTES, parseFixedHeader } from "./header";
+import {
+  buildPacket,
+  FIXED_HEADER_BYTES,
+  getFixedHeaderLength,
+  LEGACY_VERSION,
+  MAGIC,
+  parseFixedHeader,
+  VERSION,
+} from "./header";
 import { getUsableCapacityBytes } from "./capacity";
 import { HideOptions, RevealOptions, StegoError } from "./types";
 
@@ -8,7 +16,7 @@ export { getRawCapacityBytes, getUsableCapacityBytes, formatBytes } from "./capa
 export { computeHistogram } from "./histogram";
 export { StegoError } from "./types";
 export { extractLsbPlane } from "./lsb-plane";
-export type { StegoErrorCode, HideOptions, RevealOptions } from "./types";
+export type { BitsPerChannel, StegoErrorCode, HideOptions, RevealOptions } from "./types";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -46,8 +54,9 @@ export async function hideMessage(
   message: string,
   options: HideOptions
 ): Promise<ImageData> {
+  const bitsPerChannel = options.bitsPerChannel ?? 1;
   const plaintext = encoder.encode(message);
-  const usable = getUsableCapacityBytes(image.width, image.height);
+  const usable = getUsableCapacityBytes(image.width, image.height, bitsPerChannel);
   if (plaintext.length > usable) {
     throw new StegoError(
       "CAPACITY_EXCEEDED",
@@ -57,10 +66,10 @@ export async function hideMessage(
 
   const seed = options.stegoKey ?? options.password;
   const { salt, iv, ciphertext } = await encryptMessage(options.password, plaintext);
-  const packet = buildPacket({ salt, iv, ciphertext });
+  const packet = buildPacket({ salt, iv, ciphertext }, bitsPerChannel);
 
   const output = cloneImageData(image);
-  embedBytes(output.data, packet, { seed });
+  embedBytes(output.data, packet, { seed, bitsPerChannel });
   return output;
 }
 
@@ -70,12 +79,34 @@ export async function hideMessage(
  */
 export async function revealMessage(image: ImageData, options: RevealOptions): Promise<string> {
   const seed = options.stegoKey ?? options.password;
-  const headerBytes = extractBytes(image.data, FIXED_HEADER_BYTES, { seed });
-  const { salt, iv, cipherLength } = parseFixedHeader(headerBytes);
+  const magicProbe = extractBytes(image.data, MAGIC.length + 2, { seed, bitsPerChannel: 1 });
+  const version = magicProbe[MAGIC.length];
 
-  const totalLength = FIXED_HEADER_BYTES + cipherLength;
-  const fullPacket = extractBytes(image.data, totalLength, { seed });
-  const ciphertext = fullPacket.slice(FIXED_HEADER_BYTES);
+  let bitsPerChannel: 1 | 2 | 3 = 1;
+  if (version === LEGACY_VERSION) {
+    bitsPerChannel = 1;
+  } else if (version === VERSION) {
+    const rawMode = magicProbe[MAGIC.length + 1];
+    if (rawMode === 1 || rawMode === 2 || rawMode === 3) {
+      bitsPerChannel = rawMode;
+    } else {
+      throw new StegoError("CORRUPTED", `Mode LSB tidak didukung: ${rawMode}.`);
+    }
+  } else {
+    throw new StegoError("CORRUPTED", `Versi paket (${version}) tidak didukung.`);
+  }
+
+  const fixedHeaderLength = getFixedHeaderLength(version);
+  const headerBytes = extractBytes(image.data, fixedHeaderLength, { seed, bitsPerChannel });
+  const { salt, iv, cipherLength, bitsPerChannel: packetBitsPerChannel } = parseFixedHeader(headerBytes);
+
+  const effectiveBitsPerChannel = packetBitsPerChannel ?? bitsPerChannel;
+  const totalLength = fixedHeaderLength + cipherLength;
+  const fullPacket = extractBytes(image.data, totalLength, {
+    seed,
+    bitsPerChannel: effectiveBitsPerChannel,
+  });
+  const ciphertext = fullPacket.slice(fixedHeaderLength);
 
   const plaintext = await decryptMessage(options.password, salt, iv, ciphertext);
   return decoder.decode(plaintext);
