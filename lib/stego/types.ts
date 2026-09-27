@@ -14,12 +14,16 @@ export class StegoError extends Error {
   }
 }
 
+export type BitsPerChannel = 1 | 2 | 3;
+
 export interface HideOptions {
   password: string;
   stegoKey?: string;
+  bitsPerChannel?: BitsPerChannel;
 }
 
 export interface RevealOptions {
   password: string;
   stegoKey?: string;
+  bitsPerChannel?: BitsPerChannel;
 }

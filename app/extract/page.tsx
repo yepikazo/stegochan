@@ -31,7 +31,10 @@ export default function ExtractPage() {
     setMessage(null);
 
     try {
-      const revealed = await revealMessage(imageData, { password, stegoKey: password });
+      const revealed = await revealMessage(imageData, {
+        password,
+        stegoKey: password,
+      });
       setMessage(revealed);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal mengungkap pesan.");
@@ -48,6 +51,8 @@ export default function ExtractPage() {
       </h1>
       <p className="mt-3 mb-8 text-[0.98rem] leading-7 text-[#93969f]">
         Unggah stego image dan masukkan stego-key yang sama saat embed untuk mengekstrak payload.
+        Header paket menyimpan mode LSB yang dipakai saat embed, jadi proses extract otomatis
+        mengikuti mode yang benar dan akan rusak bila mode tidak sesuai dengan data asli.
       </p>
 
       {error && <Alert>{error}</Alert>}
