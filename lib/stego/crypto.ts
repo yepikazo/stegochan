@@ -4,7 +4,8 @@ import { StegoError } from "./types";
 const PBKDF2_ITERATIONS = 600_000;
 
 function assertSecureContext() {
-  if (typeof window === "undefined" || !window.crypto?.subtle) {
+  const cryptoApi = globalThis.crypto ?? (typeof window !== "undefined" ? window.crypto : undefined);
+  if (!cryptoApi?.subtle) {
     throw new StegoError(
       "CORRUPTED",
       "Web Crypto API tidak tersedia. Jalankan aplikasi lewat HTTPS atau localhost."
@@ -13,16 +14,17 @@ function assertSecureContext() {
 }
 
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  const cryptoApi = globalThis.crypto ?? (typeof window !== "undefined" ? window.crypto : undefined);
   assertSecureContext();
   const encoder = new TextEncoder();
-  const baseKey = await crypto.subtle.importKey(
+  const baseKey = await cryptoApi.subtle.importKey(
     "raw",
     encoder.encode(password),
     "PBKDF2",
     false,
     ["deriveKey"]
   );
-  return crypto.subtle.deriveKey(
+  return cryptoApi.subtle.deriveKey(
     {
       name: "PBKDF2",
       salt: salt as BufferSource,
@@ -46,11 +48,12 @@ export async function encryptMessage(
   password: string,
   plaintext: Uint8Array
 ): Promise<EncryptedPayload> {
+  const cryptoApi = globalThis.crypto ?? (typeof window !== "undefined" ? window.crypto : undefined);
   assertSecureContext();
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const salt = cryptoApi.getRandomValues(new Uint8Array(SALT_LENGTH));
+  const iv = cryptoApi.getRandomValues(new Uint8Array(IV_LENGTH));
   const key = await deriveKey(password, salt);
-  const encrypted = await crypto.subtle.encrypt(
+  const encrypted = await cryptoApi.subtle.encrypt(
     { name: "AES-GCM", iv: iv as BufferSource },
     key,
     plaintext as BufferSource
@@ -64,10 +67,11 @@ export async function decryptMessage(
   iv: Uint8Array,
   ciphertext: Uint8Array
 ): Promise<Uint8Array> {
+  const cryptoApi = globalThis.crypto ?? (typeof window !== "undefined" ? window.crypto : undefined);
   assertSecureContext();
   const key = await deriveKey(password, salt);
   try {
-    const decrypted = await crypto.subtle.decrypt(
+    const decrypted = await cryptoApi.subtle.decrypt(
       { name: "AES-GCM", iv: iv as BufferSource },
       key,
       ciphertext as BufferSource
