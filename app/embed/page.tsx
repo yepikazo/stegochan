@@ -61,119 +61,111 @@ export default function EmbedPage() {
   }
 
   return (
-    <main className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
-      <p className="eyebrow">Sembunyikan</p>
-      <h1 style={{ fontSize: "1.7rem", marginTop: 10 }}>Embed pesan pada cover image</h1>
-      <p className="muted" style={{ marginTop: 10, marginBottom: 32 }}>
+    <main className="mx-auto max-w-3xl px-6 pb-20 pt-12 md:px-8">
+      <p className="font-mono text-[0.8rem] uppercase tracking-[0.12em] text-[#e8a33d]">Sembunyikan</p>
+      <h1 className="mt-2 text-[1.7rem] font-semibold tracking-[-0.03em] text-white">
+        Embed pesan pada cover image
+      </h1>
+      <p className="mt-3 mb-8 text-[0.98rem] leading-7 text-[#93969f]">
         Metode LSB digunakan untuk menyisipkan payload pada citra cover, lalu pesan dienkripsi dengan
         password / stego-key sebelum disisipkan.
       </p>
 
       {error && <Alert>{error}</Alert>}
 
-      <form onSubmit={handleSubmit}>
-        <div className="field">
-          <label className="label">Cover image</label>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Cover image</label>
           <Dropzone previewUrl={previewUrl} onFile={loadFile} />
           {imageData && (
-            <p className="hint">
+            <p className="mt-2 text-[0.8rem] text-[#93969f]">
               {imageData.width}&times;{imageData.height}px &middot; kapasitas {formatBytes(capacity)}
             </p>
           )}
         </div>
 
-        <div className="field">
-          <label className="label">Payload / pesan rahasia</label>
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Payload / pesan rahasia</label>
           <textarea
-            className="textarea"
+            className="min-h-[110px] w-full resize-y rounded-md border border-[#33363f] bg-[#1d1f26] px-3 py-3 font-mono text-[0.88rem] text-[#ecedf1] placeholder:text-[#93969f] focus:border-[#e8a33d] focus:outline-none"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Tulis pesan yang ingin disembunyikan..."
           />
           {imageData && (
-            <p className={`hint${overLimit ? " over-limit" : ""}`}>
+            <p className={`mt-2 text-[0.8rem] ${overLimit ? "text-[#e5586b]" : "text-[#93969f]"}`}>
               {formatBytes(messageBytes)} / {formatBytes(capacity)}
               {overLimit && " — melebihi kapasitas gambar ini"}
             </p>
           )}
         </div>
 
-        <div className="field">
-          <label className="label">Password / stego-key</label>
-          <div style={{ position: "relative" }}>
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Password / stego-key</label>
+          <div className="relative">
             <input
-              className="input"
+              className="w-full rounded-md border border-[#33363f] bg-[#1d1f26] px-3 py-3 pr-12 text-[0.95rem] text-[#ecedf1] placeholder:text-[#93969f] focus:border-[#e8a33d] focus:outline-none"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password untuk enkripsi dan urutan penyisipan"
               autoComplete="new-password"
-              style={{ paddingRight: 52 }}
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-              style={{
-                position: "absolute",
-                right: 8,
-                top: "50%",
-                transform: "translateY(-50%)",
-                border: "none",
-                background: "transparent",
-                color: "#ecedf1",
-                cursor: "pointer",
-                fontSize: "0.72rem",
-                padding: "6px 8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 4,
-              }}
+              className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded px-2 py-1 text-[0.72rem] text-[#ecedf1] transition hover:text-white"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
         </div>
 
-        <button className="btn btn-primary btn-block" disabled={loading || overLimit}>
+        <button
+          className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-[#e8a33d] px-5 py-3 text-sm font-semibold text-[#1a1408] transition hover:bg-[#f0af52] disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px"
+          disabled={loading || overLimit}
+        >
           {loading ? "Memproses..." : "Embed pesan"}
         </button>
       </form>
 
       {resultUrl && (
-        <div className="card" style={{ marginTop: 32 }}>
+        <div className="mt-8 rounded-xl border border-[#33363f] bg-[#1d1f26] p-7">
           <Alert variant="success">Payload berhasil disisipkan ke dalam cover image.</Alert>
-          <div className="image-grid">
-            <div className="image-panel">
-              <p className="label">Cover image</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <p className="text-[0.85rem] text-[#93969f]">Cover image</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={previewUrl ?? resultUrl} alt="Cover image" className="result-image" />
+              <img src={previewUrl ?? resultUrl} alt="Cover image" className="max-h-[220px] w-full rounded-md border border-[#33363f] object-contain" />
             </div>
-            <div className="image-panel">
-              <p className="label">Stego image</p>
+            <div className="flex flex-col gap-2">
+              <p className="text-[0.85rem] text-[#93969f]">Stego image</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={resultUrl} alt="Stego image" className="result-image" />
+              <img src={resultUrl} alt="Stego image" className="max-h-[220px] w-full rounded-md border border-[#33363f] object-contain" />
             </div>
           </div>
 
           {metrics && (
-            <div className="metric-grid">
-              <div className="metric-box">
-                <span className="metric-label">MSE</span>
-                <strong>{metrics.mse.toFixed(4)}</strong>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2 rounded-md border border-[#33363f] bg-[#262933] p-4">
+                <span className="text-[0.78rem] uppercase tracking-[0.08em] text-[#93969f]">MSE</span>
+                <strong className="text-[1.1rem] text-white">{metrics.mse.toFixed(4)}</strong>
               </div>
-              <div className="metric-box">
-                <span className="metric-label">PSNR</span>
-                <strong>{metrics.psnr.toFixed(2)} dB</strong>
+              <div className="flex flex-col gap-2 rounded-md border border-[#33363f] bg-[#262933] p-4">
+                <span className="text-[0.78rem] uppercase tracking-[0.08em] text-[#93969f]">PSNR</span>
+                <strong className="text-[1.1rem] text-white">{metrics.psnr.toFixed(2)} dB</strong>
               </div>
             </div>
           )}
 
-          <button className="btn btn-primary btn-block" onClick={handleDownload}>
+          <button
+            className="mt-5 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-[#e8a33d] px-5 py-3 text-sm font-semibold text-[#1a1408] transition hover:bg-[#f0af52] active:translate-y-px"
+            onClick={handleDownload}
+          >
             Unduh PNG
           </button>
-          <p className="hint" style={{ marginTop: 12 }}>
+          <p className="mt-3 text-[0.8rem] text-[#93969f]">
             File output tetap dalam format PNG untuk menjaga integritas bit LSB. Jika disimpan ulang ke
             JPEG, payload dapat rusak atau tidak bisa diekstraksi.
           </p>

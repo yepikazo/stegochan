@@ -34,69 +34,58 @@ export default function ExtractPage() {
   }
 
   return (
-    <main className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
-      <p className="eyebrow">Ungkap</p>
-      <h1 style={{ fontSize: "1.7rem", marginTop: 10 }}>Baca pesan tersembunyi</h1>
-      <p className="muted" style={{ marginTop: 10, marginBottom: 32 }}>
+    <main className="mx-auto max-w-3xl px-6 pb-20 pt-12 md:px-8">
+      <p className="font-mono text-[0.8rem] uppercase tracking-[0.12em] text-[#e8a33d]">Ungkap</p>
+      <h1 className="mt-2 text-[1.7rem] font-semibold tracking-[-0.03em] text-white">
+        Baca pesan tersembunyi
+      </h1>
+      <p className="mt-3 mb-8 text-[0.98rem] leading-7 text-[#93969f]">
         Unggah stego image dan masukkan stego-key yang sama saat embed untuk mengekstrak payload.
       </p>
 
       {error && <Alert>{error}</Alert>}
 
-      <form onSubmit={handleSubmit}>
-        <div className="field">
-          <label className="label">Gambar stego</label>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Gambar stego</label>
           <Dropzone previewUrl={previewUrl} onFile={loadFile} label="Klik atau seret gambar stego" />
         </div>
 
-        <div className="field">
-          <label className="label">Password / stego-key</label>
-          <div style={{ position: "relative" }}>
+        <div>
+          <label className="mb-2 block text-[0.85rem] text-[#93969f]">Password / stego-key</label>
+          <div className="relative">
             <input
-              className="input"
+              className="w-full rounded-md border border-[#33363f] bg-[#1d1f26] px-3 py-3 pr-12 text-[0.95rem] text-[#ecedf1] placeholder:text-[#93969f] focus:border-[#e8a33d] focus:outline-none"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Kunci yang dipakai saat embed"
               autoComplete="current-password"
-              style={{ paddingRight: 52 }}
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-              style={{
-                position: "absolute",
-                right: 8,
-                top: "50%",
-                transform: "translateY(-50%)",
-                border: "none",
-                background: "transparent",
-                color: "#ecedf1",
-                cursor: "pointer",
-                fontSize: "0.72rem",
-                padding: "6px 8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 4,
-              }}
+              className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center rounded px-2 py-1 text-[0.72rem] text-[#ecedf1] transition hover:text-white"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
         </div>
 
-        <button className="btn btn-primary btn-block" disabled={loading}>
+        <button
+          className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-[#e8a33d] px-5 py-3 text-sm font-semibold text-[#1a1408] transition hover:bg-[#f0af52] disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px"
+          disabled={loading}
+        >
           {loading ? "Membongkar..." : "Ungkap pesan"}
         </button>
       </form>
 
       {message !== null && (
-        <div className="card" style={{ marginTop: 32 }}>
+        <div className="mt-8 rounded-xl border border-[#33363f] bg-[#1d1f26] p-7">
           <Alert variant="success">Pesan berhasil diungkap.</Alert>
-          <p className="label">Isi pesan</p>
-          <p className="mono" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+          <p className="mb-3 text-[0.85rem] text-[#93969f]">Isi pesan</p>
+          <p className="whitespace-pre-wrap break-words font-mono text-[0.95rem] leading-7 text-[#ecedf1]">
             {message}
           </p>
         </div>

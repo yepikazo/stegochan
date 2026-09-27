@@ -24,15 +24,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className={`${spaceGrotesk.variable} ${inter.variable} ${plexMono.variable}`}>
-      <body>
-        <nav className="nav">
-          <div className="nav-inner">
-            <Link href="/" className="brand">
-              <span className="brand-mark">Stego</span>Chan
+      <body className="min-h-screen bg-[#14151a] text-[#ecedf1] antialiased">
+        <nav className="border-b border-white/10 bg-[#14151a]/90 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4 md:px-8">
+            <Link
+              href="/"
+              className="flex items-baseline gap-2 text-[1.05rem] font-semibold tracking-[-0.03em] text-white no-underline"
+            >
+              <span className="text-[#e8a33d]">Stego</span>Chan
             </Link>
-            <div className="nav-links">
-              <Link href="/embed">Sembunyikan</Link>
-              <Link href="/extract">Ungkap</Link>
+            <div className="flex items-center gap-5 text-sm text-[#93969f]">
+              <Link href="/embed" className="transition-colors hover:text-white">
+                Sembunyikan
+              </Link>
+              <Link href="/extract" className="transition-colors hover:text-white">
+                Ungkap
+              </Link>
             </div>
           </div>
         </nav>

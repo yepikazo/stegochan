@@ -22,7 +22,9 @@ export default function Dropzone({ previewUrl, onFile, label }: DropzoneProps) {
 
   return (
     <div
-      className={`dropzone${active ? " active" : ""}`}
+      className={`cursor-pointer rounded-md border border-dashed border-[#33363f] bg-[#1d1f26] p-8 text-center transition ${
+        active ? "border-[#e8a33d] bg-[#262933]" : "hover:border-[#93969f]"
+      }`}
       onClick={() => inputRef.current?.click()}
       onDragOver={(e) => {
         e.preventDefault();
@@ -49,12 +51,14 @@ export default function Dropzone({ previewUrl, onFile, label }: DropzoneProps) {
       />
       {previewUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewUrl} alt="Pratinjau gambar" className="dropzone-preview" />
+        <img src={previewUrl} alt="Pratinjau gambar" className="mx-auto max-h-[220px] max-w-full rounded-md border border-[#33363f]" />
       ) : (
-        <>
-          <strong>{label ?? "Klik atau seret gambar ke sini"}</strong>
-          <p>PNG direkomendasikan &middot; JPEG akan diekspor ulang sebagai PNG</p>
-        </>
+        <div className="space-y-1">
+          <strong className="text-base font-semibold text-white">
+            {label ?? "Klik atau seret gambar ke sini"}
+          </strong>
+          <p className="text-sm text-[#93969f]">PNG direkomendasikan &middot; JPEG akan diekspor ulang sebagai PNG</p>
+        </div>
       )}
     </div>
   );
