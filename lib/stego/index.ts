@@ -67,7 +67,6 @@ export async function hideMessage(
   const seed = options.stegoKey ?? options.password;
   const { salt, iv, ciphertext } = await encryptMessage(options.password, plaintext);
   const packet = buildPacket({ salt, iv, ciphertext }, bitsPerChannel);
-
   const output = cloneImageData(image);
   embedBytes(output.data, packet, { seed, bitsPerChannel });
   return output;
@@ -79,7 +78,11 @@ export async function hideMessage(
  */
 export async function revealMessage(image: ImageData, options: RevealOptions): Promise<string> {
   const seed = options.stegoKey ?? options.password;
-  const magicProbe = extractBytes(image.data, MAGIC.length + 2, { seed, bitsPerChannel: 1 });
+  const magicProbe = extractBytes(
+    image.data,
+    MAGIC.length + 2,
+    { seed, bitsPerChannel: 1 }
+  );
   const version = magicProbe[MAGIC.length];
 
   let bitsPerChannel: 1 | 2 | 3 = 1;
@@ -90,24 +93,59 @@ export async function revealMessage(image: ImageData, options: RevealOptions): P
     if (rawMode === 1 || rawMode === 2 || rawMode === 3) {
       bitsPerChannel = rawMode;
     } else {
-      throw new StegoError("CORRUPTED", `Mode LSB tidak didukung: ${rawMode}.`);
+      throw new StegoError(
+        "CORRUPTED",
+        `Mode LSB tidak didukung: ${rawMode}.`
+      );
     }
   } else {
-    throw new StegoError("CORRUPTED", `Versi paket (${version}) tidak didukung.`);
+    throw new StegoError(
+      "CORRUPTED",
+      `Versi paket (${version}) tidak didukung.`
+    );
   }
 
   const fixedHeaderLength = getFixedHeaderLength(version);
-  const headerBytes = extractBytes(image.data, fixedHeaderLength, { seed, bitsPerChannel });
-  const { salt, iv, cipherLength, bitsPerChannel: packetBitsPerChannel } = parseFixedHeader(headerBytes);
+  const headerBytes = extractBytes(
+    image.data,
+    fixedHeaderLength,
+    { seed, bitsPerChannel }
+  );
 
-  const effectiveBitsPerChannel = packetBitsPerChannel ?? bitsPerChannel;
-  const totalLength = fixedHeaderLength + cipherLength;
-  const fullPacket = extractBytes(image.data, totalLength, {
-    seed,
-    bitsPerChannel: effectiveBitsPerChannel,
+  console.log("EXTRACT HEADER:", {
+    header: Array.from(headerBytes.slice(0, 37)),
+    lengthBytes: Array.from(headerBytes.slice(33, 37)),
   });
+
+  const {
+    salt,
+    iv,
+    cipherLength,
+    bitsPerChannel: packetBitsPerChannel
+  } = parseFixedHeader(headerBytes);
+
+  const effectiveBitsPerChannel =
+    packetBitsPerChannel ?? bitsPerChannel;
+
+  const totalLength = fixedHeaderLength + cipherLength;
+
+  const fullPacket = extractBytes(
+    image.data,
+    totalLength,
+    {
+      seed,
+      bitsPerChannel: effectiveBitsPerChannel,
+    }
+  );
+
   const ciphertext = fullPacket.slice(fixedHeaderLength);
 
-  const plaintext = await decryptMessage(options.password, salt, iv, ciphertext);
+  const plaintext = await decryptMessage(
+    options.password,
+    salt,
+    iv,
+    ciphertext
+  );
+
   return decoder.decode(plaintext);
 }
