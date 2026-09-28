@@ -4,10 +4,10 @@ interface HistogramChartProps {
   color: "red" | "green" | "blue";
 }
 
-const COLORS: Record<HistogramChartProps["color"], string> = {
-  red: "#f87171",
-  green: "#4ade80",
-  blue: "#60a5fa",
+const COLORS: Record<HistogramChartProps["color"], { indicator: string; bar: string }> = {
+  red: { indicator: "bg-[#f87171]", bar: "fill-[#f87171]" },
+  green: { indicator: "bg-[#4ade80]", bar: "fill-[#4ade80]" },
+  blue: { indicator: "bg-[#60a5fa]", bar: "fill-[#60a5fa]" },
 };
 
 export default function HistogramChart({ title, data, color }: HistogramChartProps) {
@@ -21,8 +21,7 @@ export default function HistogramChart({ title, data, color }: HistogramChartPro
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-[0.7rem] uppercase tracking-[0.08em] text-[#93969f]">{title}</span>
         <span
-          className="h-2.5 w-2.5 rounded-full"
-          style={{ backgroundColor: COLORS[color] }}
+          className={`h-2.5 w-2.5 rounded-full ${COLORS[color].indicator}`}
           aria-hidden="true"
         />
       </div>
@@ -33,7 +32,7 @@ export default function HistogramChart({ title, data, color }: HistogramChartPro
         role="img"
         aria-label={`${title} histogram`}
       >
-        <rect x="0" y="0" width={barWidth} height={chartHeight} fill="#111318" rx="4" />
+        <rect x="0" y="0" width={barWidth} height={chartHeight} className="fill-[#111318]" rx="4" />
         {data.map((value, index) => {
           const barHeight = (value / maxValue) * (chartHeight - 10);
           const x = index * (barWidth / data.length) + barGap / 2;
@@ -46,7 +45,7 @@ export default function HistogramChart({ title, data, color }: HistogramChartPro
               y={y}
               width={Math.max(1, barWidth / data.length - barGap)}
               height={barHeight}
-              fill={COLORS[color]}
+              className={COLORS[color].bar}
               opacity={0.9}
             />
           );

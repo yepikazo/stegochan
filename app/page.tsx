@@ -1,68 +1,252 @@
 import Link from "next/link";
 
-export default function HomePage() {
+function SignalMark() {
   return (
-    <main className="mx-auto max-w-3xl px-6 pb-20 pt-16 md:px-8">
-      <p className="font-mono text-[0.8rem] uppercase tracking-[0.12em] text-[#e8a33d]">
-        Covert Hiding of Assets in Noise
-      </p>
-      <h1 className="mt-3 max-w-[560px] text-[2.4rem] font-semibold leading-tight tracking-[-0.04em] text-white">
-        Sembunyikan sebuah pesan di dalam gambar biasa.
-      </h1>
-      <p className="mt-4 max-w-[520px] text-[1.02rem] leading-7 text-[#93969f]">
-        StegoChan mengenkripsi pesan Anda lalu menyembunyikannya di bit-bit
-        terkecil warna piksel &mdash; noise yang tidak kasat mata. Semua proses
-        berjalan di browser Anda; gambar dan pesan tidak pernah dikirim ke
-        server mana pun.
-      </p>
+    <div className="mb-[21px] flex h-[27px] w-[42px] items-end gap-[3px] max-[700px]:mb-[18px]" aria-hidden="true">
+      <span className="h-2 w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-[14px] w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-[23px] w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-[27px] w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-5 w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-[14px] w-1 rounded-t-[1px] bg-[#f3b83f]" />
+      <span className="h-2 w-1 rounded-t-[1px] bg-[#f3b83f]" />
+    </div>
+  );
+}
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href="/embed"
-          className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#e8a33d] px-5 py-3 text-sm font-semibold text-[#1a1408] transition hover:bg-[#f0af52] active:translate-y-px"
-        >
-          Sembunyikan pesan
-        </Link>
-        <Link
-          href="/extract"
-          className="inline-flex items-center justify-center rounded-md border border-[#33363f] bg-transparent px-5 py-3 text-sm font-semibold text-white transition hover:border-[#93969f] active:translate-y-px"
-        >
-          Ungkap pesan
-        </Link>
+function LockIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="16" height="12" x="4" y="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+function ExtractIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 4V2" />
+      <path d="M12 22v-2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+    </svg>
+  );
+}
+
+function ImageIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="m21 15-5-5L5 21" />
+    </svg>
+  );
+}
+
+function MessageIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      <path d="M8 9h8" />
+      <path d="M8 13h5" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+function StepCard({
+  number,
+  icon,
+  title,
+  description,
+  meta,
+}: {
+  number: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  meta: string;
+}) {
+  return (
+    <article className="relative min-h-[285px] overflow-hidden rounded-xl border border-[rgba(209,199,170,0.35)] bg-[#ebe4d1] p-[22px] text-[#1c1e22] transition-[transform,border-color] duration-200 before:absolute before:left-0 before:top-0 before:h-[3px] before:w-[35px] before:bg-[#f3b83f] before:content-[''] hover:-translate-y-[3px] hover:border-[rgba(243,184,63,0.65)] max-[900px]:min-h-0">
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-[rgba(112,99,63,0.25)] bg-[rgba(205,192,156,0.35)] text-[#1c1e22]">{icon}</div>
+
+        <span className="font-mono text-[0.7rem] font-medium text-[#1c1e22]">{number}</span>
       </div>
 
-      <section className="mt-18">
-        <h2 className="mb-6 text-[1.1rem] font-semibold text-white">
-          Cara kerjanya
-        </h2>
-        <ol className="flex list-decimal flex-col gap-3 pl-5 text-[0.95rem] leading-7 text-[#ecedf1] marker:text-[#e8a33d]">
-          <li>
-            <strong className="font-semibold text-white">Enkripsi.</strong>{" "}
-            Pesan dikunci dengan AES-256-GCM, memakai kunci yang diturunkan dari
-            password Anda lewat PBKDF2.
-          </li>
-          <li>
-            <strong className="font-semibold text-white">Penyisipan.</strong>{" "}
-            Hasil terenkripsi ditulis ke bit terakhir setiap kanal merah, hijau,
-            dan biru &mdash; perubahan yang tidak terlihat mata.
-          </li>
-          <li>
-            <strong className="font-semibold text-white">Ekspor.</strong> Gambar
-            hasil diunduh sebagai PNG, format lossless yang menjaga setiap bit
-            tetap utuh.
-          </li>
-        </ol>
+      <div className="mt-[17px] h-px w-full bg-[rgba(112,99,63,0.22)]" />
+
+      <h3 className="mt-5 font-[var(--font-space-grotesk)] text-[1.3rem] font-medium leading-[1.2] tracking-[-0.025em] text-[#1c1e22]">{title}</h3>
+
+      <p className="mt-2.5 max-w-[330px] text-[0.79rem] leading-[1.65] text-[#66645e]">{description}</p>
+
+      <div className="mt-5 flex items-center gap-[7px] font-mono text-[0.58rem] font-medium tracking-[0.02em] text-[#33332f]">
+        <span className="text-[0.52rem]">◉</span>
+        {meta}
+      </div>
+    </article>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <main className="overflow-hidden">
+      {/* =====================================================
+          HERO
+          ===================================================== */}
+      <section className="relative flex min-h-[590px] items-center border-b border-white/[0.08] max-[900px]:min-h-0">
+        <div className="pointer-events-none absolute -right-[90px] -bottom-[150px] h-[370px] w-[370px] max-[900px]:-right-[190px] max-[900px]:-bottom-[180px] max-[900px]:opacity-70 max-[700px]:-right-[230px] max-[700px]:-bottom-[150px] max-[700px]:h-[330px] max-[700px]:w-[330px]" aria-hidden="true">
+          <div className="absolute inset-0 rounded-full border border-[rgba(243,184,63,0.18)] after:absolute after:-inset-px after:scale-[1.15] after:rounded-full after:border after:border-dashed after:border-[rgba(243,184,63,0.15)] after:content-['']" />
+          <div className="absolute top-[45px] left-[45px] h-[280px] w-[280px] rounded-full border border-[rgba(243,184,63,0.11)]" />
+        </div>
+
+        <div className="relative z-[2] mx-auto w-[min(100%_-_48px,1380px)] py-[78px] pb-[88px] max-[900px]:w-[min(100%_-_48px,1380px)] max-[900px]:pt-[70px] max-[900px]:pb-[78px] max-[700px]:w-[min(100%_-_32px,1380px)] max-[700px]:pt-[55px] max-[700px]:pb-[65px]">
+          <SignalMark />
+
+          <div className="relative mb-6 inline-flex items-center pl-[31px] font-mono text-[0.72rem] font-medium uppercase tracking-[0.08em] text-[#f3b83f] before:absolute before:top-1/2 before:left-0 before:h-px before:w-[23px] before:bg-[#f3b83f] before:content-['']">
+            Covert Hiding of Assets in Noise
+          </div>
+
+          <h1 className="max-w-[930px] font-[var(--font-space-grotesk)] text-[clamp(3rem,5.5vw,5rem)] font-normal leading-[0.98] tracking-[-0.055em] text-[#efeee9] max-[900px]:text-[clamp(2.8rem,8vw,4.3rem)] max-[700px]:text-[clamp(2.45rem,12vw,3.6rem)] max-[700px]:leading-none">
+            Sembunyikan sebuah pesan
+            <br />
+            <span className="text-[#f3b83f]">di dalam gambar biasa.</span>
+          </h1>
+
+          <p className="mt-[26px] max-w-[650px] text-base leading-[1.65] text-[#98999e] max-[700px]:text-[0.92rem]">
+            StegoChan mengenkripsi pesan Anda lalu menyembunyikannya di
+            bit-bit terkecil warna piksel — noise yang tidak kasat mata.
+            Semua proses berjalan di browser Anda; gambar dan pesan tidak
+            pernah dikirim ke server mana pun.
+          </p>
+
+          <div className="mt-7 flex items-center gap-2.5 max-[700px]:flex-wrap">
+            <Link href="/embed" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#f3b83f] bg-[#f3b83f] px-8 text-[0.84rem] font-semibold text-[#19150b] no-underline transition hover:-translate-y-px hover:border-[#ffc95a] hover:bg-[#ffc95a]">
+              <span>Embed</span>
+              <LockIcon />
+            </Link>
+
+            <Link href="/extract" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#303238] bg-transparent px-8 text-[0.84rem] font-semibold text-[#efeee9] no-underline transition hover:-translate-y-px hover:border-[#4a4c53] hover:bg-[#1d1f24]">
+              <span>Extract</span>
+              <ExtractIcon />
+            </Link>
+          </div>
+        </div>
       </section>
 
-      <section className="mt-14">
-        <h2 className="mb-3 text-[1.1rem] font-semibold text-white">
-          Yang perlu diketahui
-        </h2>
-        <p className="max-w-[560px] text-[0.92rem] leading-7 text-[#93969f]">
-          Data akan rusak jika gambar dikompres ulang &mdash; termasuk saat
-          diunggah ke WhatsApp, Instagram, atau platform lain yang memampatkan
-          gambar. Selalu bagikan file PNG asli yang diunduh dari sini.
-        </p>
+      {/* =====================================================
+          HOW IT WORKS
+          ===================================================== */}
+      <section className="relative px-0 pt-[82px] pb-[54px] max-[700px]:pt-[65px]">
+        <div className="mx-auto w-[min(100%_-_48px,1380px)] max-[700px]:w-[min(100%_-_32px,1380px)]">
+          <div className="mb-[43px] max-w-[760px] max-[700px]:mb-[30px]">
+            <h2 className="font-[var(--font-space-grotesk)] text-[clamp(2.25rem,4vw,3.2rem)] font-normal leading-none tracking-[-0.04em] text-[#f3b83f]">Cara Kerja</h2>
+
+            <p className="mt-5 max-w-[680px] text-[0.92rem] leading-[1.65] text-[#98999e]">
+              Steganografi menyisipkan data terenkripsi ke dalam variasi
+              piksel yang nyaris tak terlihat tanpa mengubah tampilan
+              gambar secara kasat mata.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-[18px] max-[900px]:grid-cols-1">
+            <StepCard
+              number="01"
+              icon={<ImageIcon />}
+              title="Pilih gambar penyamaran"
+              description="Gunakan foto biasa dari perangkatmu. Sistem memeriksa kapasitas dan format secara otomatis."
+              meta="PNG & JPG · MAKS. 20 MB"
+            />
+
+            <StepCard
+              number="02"
+              icon={<MessageIcon />}
+              title="Tulis pesan dan kunci"
+              description="Masukkan teks rahasia, lalu tambahkan password opsional untuk lapisan proteksi tambahan."
+              meta="AES-256-GCM · SALT UNIK"
+            />
+
+            <StepCard
+              number="03"
+              icon={<DownloadIcon />}
+              title="Unduh atau ungkap"
+              description="Unduh gambar yang tampak sama. Penerima membukanya di mode Ungkap dengan kunci yang sesuai."
+              meta="PROSES LOKAL · TANPA LOG"
+            />
+          </div>
+
+          <div className="mt-[50px] flex items-center gap-[14px] font-mono text-[0.56rem] tracking-[0.02em] text-[#686a70] max-[700px]:items-start max-[700px]:text-[0.5rem] max-[700px]:leading-[1.6]">
+            <span className="block h-px w-[54px] shrink-0 bg-[#f3b83f] max-[700px]:w-[35px]" />
+
+            <span>
+              PERUBAHAN VISUAL: TAK TERDETEKSI MATA · INTEGRITAS PESAN:
+              TERVERIFIKASI OTOMATIS
+            </span>
+          </div>
+        </div>
       </section>
     </main>
   );
