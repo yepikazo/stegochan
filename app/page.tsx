@@ -130,21 +130,16 @@ function StepCard({
   meta: string;
 }) {
   return (
-    <article className="relative min-h-[285px] overflow-hidden rounded-xl border border-[rgba(209,199,170,0.35)] bg-[#ebe4d1] p-[22px] text-[#1c1e22] transition-[transform,border-color] duration-200 before:absolute before:left-0 before:top-0 before:h-[3px] before:w-[35px] before:bg-[#f3b83f] before:content-[''] hover:-translate-y-[3px] hover:border-[rgba(243,184,63,0.65)] max-[900px]:min-h-0">
+    <article className="relative min-h-[285px] overflow-hidden rounded-xl border border-[#303238] bg-[#1d1f24] p-[22px] text-[#efeee9] transition-[transform,border-color,background-color] duration-200 before:absolute before:left-0 before:top-0 before:h-[3px] before:w-[35px] before:bg-[#f3b83f] before:content-[''] hover:-translate-y-[3px] hover:border-[rgba(243,184,63,0.65)] hover:bg-[#202227] max-[900px]:min-h-0">
       <div className="flex items-center justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-[rgba(112,99,63,0.25)] bg-[rgba(205,192,156,0.35)] text-[#1c1e22]">{icon}</div>
-
-        <span className="font-mono text-[0.7rem] font-medium text-[#1c1e22]">{number}</span>
+        <div className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-[#3a3d44] bg-[#25272d] text-[#f3b83f]">{icon}</div>
+        <span className="font-mono text-[0.7rem] font-medium text-[#98999e]">{number}</span>
       </div>
-
-      <div className="mt-[17px] h-px w-full bg-[rgba(112,99,63,0.22)]" />
-
-      <h3 className="mt-5 font-[var(--font-space-grotesk)] text-[1.3rem] font-medium leading-[1.2] tracking-[-0.025em] text-[#1c1e22]">{title}</h3>
-
-      <p className="mt-2.5 max-w-[330px] text-[0.79rem] leading-[1.65] text-[#66645e]">{description}</p>
-
-      <div className="mt-5 flex items-center gap-[7px] font-mono text-[0.58rem] font-medium tracking-[0.02em] text-[#33332f]">
-        <span className="text-[0.52rem]">◉</span>
+      <div className="mt-[17px] h-px w-full bg-[#303238]" />
+      <h3 className="mt-5 font-[var(--font-space-grotesk)] text-[1.3rem] font-medium leading-[1.2] tracking-[-0.025em] text-[#efeee9]">{title}</h3>
+      <p className="mt-2.5 max-w-[330px] text-[0.79rem] leading-[1.65] text-[#98999e]">{description}</p>
+      <div className="mt-5 flex items-center gap-[7px] font-mono text-[0.58rem] font-medium tracking-[0.02em] text-[#b8b9bd]">
+        <span className="text-[0.52rem] text-[#f3b83f]">◉</span>
         {meta}
       </div>
     </article>
@@ -157,7 +152,7 @@ export default function HomePage() {
       {/* =====================================================
           HERO
           ===================================================== */}
-      <section className="relative flex min-h-[590px] items-center border-b border-white/[0.08] max-[900px]:min-h-0">
+      <section className="relative flex min-h-[590px] items-center max-[900px]:min-h-0">
         <div className="pointer-events-none absolute -right-[90px] -bottom-[150px] h-[370px] w-[370px] max-[900px]:-right-[190px] max-[900px]:-bottom-[180px] max-[900px]:opacity-70 max-[700px]:-right-[230px] max-[700px]:-bottom-[150px] max-[700px]:h-[330px] max-[700px]:w-[330px]" aria-hidden="true">
           <div className="absolute inset-0 rounded-full border border-[rgba(243,184,63,0.18)] after:absolute after:-inset-px after:scale-[1.15] after:rounded-full after:border after:border-dashed after:border-[rgba(243,184,63,0.15)] after:content-['']" />
           <div className="absolute top-[45px] left-[45px] h-[280px] w-[280px] rounded-full border border-[rgba(243,184,63,0.11)]" />
@@ -218,7 +213,7 @@ export default function HomePage() {
               icon={<ImageIcon />}
               title="Pilih gambar penyamaran"
               description="Gunakan foto biasa dari perangkatmu. Sistem memeriksa kapasitas dan format secara otomatis."
-              meta="PNG & JPG · MAKS. 20 MB"
+              meta="PNG"
             />
 
             <StepCard
