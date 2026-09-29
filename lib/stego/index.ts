@@ -4,13 +4,11 @@ import {
   buildPacket,
   FIXED_HEADER_BYTES,
   getFixedHeaderLength,
-  LEGACY_VERSION,
-  MAGIC,
+  GCM_TAG_LENGTH,
   parseFixedHeader,
-  VERSION,
 } from "./header";
 import { getUsableCapacityBytes } from "./capacity";
-import { HideOptions, RevealOptions, StegoError } from "./types";
+import { BitsPerChannel, HideOptions, RevealOptions, StegoError } from "./types";
 
 export { getRawCapacityBytes, getUsableCapacityBytes, formatBytes } from "./capacity";
 export { computeHistogram } from "./histogram";
@@ -75,68 +73,79 @@ export async function hideMessage(
 /**
  * Reverses `hideMessage`: reads the header, decrypts the payload, and
  * returns the original plaintext message.
+ *
+ * The header itself is embedded with the same bitsPerChannel as the payload,
+ * so the mode cannot be probed with a fixed 1-bit read (the old code did
+ * exactly that, which broke extraction for 2-bit and 3-bit images).
+ * Instead we try each candidate mode and keep the one whose header parses
+ * with a matching magic, version, and mode plus a sane cipher length.
  */
 export async function revealMessage(image: ImageData, options: RevealOptions): Promise<string> {
   const seed = options.stegoKey ?? options.password;
-  const magicProbe = extractBytes(
-    image.data,
-    MAGIC.length + 2,
-    { seed, bitsPerChannel: 1 }
-  );
-  const version = magicProbe[MAGIC.length];
 
-  let bitsPerChannel: 1 | 2 | 3 = 1;
-  if (version === LEGACY_VERSION) {
-    bitsPerChannel = 1;
-  } else if (version === VERSION) {
-    const rawMode = magicProbe[MAGIC.length + 1];
-    if (rawMode === 1 || rawMode === 2 || rawMode === 3) {
-      bitsPerChannel = rawMode;
-    } else {
-      throw new StegoError(
-        "CORRUPTED",
-        `Mode LSB tidak didukung: ${rawMode}.`
-      );
+  const explicit = options.bitsPerChannel;
+  if (explicit !== undefined && explicit !== 1 && explicit !== 2 && explicit !== 3) {
+    throw new StegoError("CORRUPTED", `Mode LSB tidak didukung: ${explicit}.`);
+  }
+  const candidates: BitsPerChannel[] = explicit !== undefined ? [explicit] : [1, 2, 3];
+
+  const availableChannels = Math.floor(image.data.length / 4) * 3;
+  let selected: {
+    bitsPerChannel: BitsPerChannel;
+    fixedHeaderLength: number;
+    totalLength: number;
+    salt: Uint8Array;
+    iv: Uint8Array;
+    cipherLength: number;
+  } | null = null;
+  let lastError: unknown = null;
+
+  for (const candidate of candidates) {
+    try {
+      const headerBytes = extractBytes(image.data, FIXED_HEADER_BYTES, {
+        seed,
+        bitsPerChannel: candidate,
+      });
+      const parsed = parseFixedHeader(headerBytes);
+      if (parsed.bitsPerChannel !== candidate) {
+        continue;
+      }
+      const fixedHeaderLength = getFixedHeaderLength(parsed.version);
+      if (!Number.isInteger(parsed.cipherLength) || parsed.cipherLength < GCM_TAG_LENGTH) {
+        continue;
+      }
+      const totalLength = fixedHeaderLength + parsed.cipherLength;
+      if (totalLength * 8 > availableChannels * candidate) {
+        continue;
+      }
+      selected = {
+        bitsPerChannel: candidate,
+        fixedHeaderLength,
+        totalLength,
+        salt: parsed.salt,
+        iv: parsed.iv,
+        cipherLength: parsed.cipherLength,
+      };
+      break;
+    } catch (err) {
+      lastError = err;
+      continue;
     }
-  } else {
-    throw new StegoError(
-      "CORRUPTED",
-      `Versi paket (${version}) tidak didukung.`
-    );
   }
 
-  const fixedHeaderLength = getFixedHeaderLength(version);
-  const headerBytes = extractBytes(
-    image.data,
-    fixedHeaderLength,
-    { seed, bitsPerChannel }
-  );
-
-  console.log("EXTRACT HEADER:", {
-    header: Array.from(headerBytes.slice(0, 37)),
-    lengthBytes: Array.from(headerBytes.slice(33, 37)),
-  });
-
-  const {
-    salt,
-    iv,
-    cipherLength,
-    bitsPerChannel: packetBitsPerChannel
-  } = parseFixedHeader(headerBytes);
-
-  const effectiveBitsPerChannel =
-    packetBitsPerChannel ?? bitsPerChannel;
-
-  const totalLength = fixedHeaderLength + cipherLength;
-
-  const fullPacket = extractBytes(
-    image.data,
-    totalLength,
-    {
-      seed,
-      bitsPerChannel: effectiveBitsPerChannel,
+  if (!selected) {
+    if (explicit !== undefined && lastError instanceof StegoError) {
+      throw lastError;
     }
-  );
+    throw new StegoError("NO_DATA_FOUND", "Tidak ditemukan data StegoChan pada gambar ini.");
+  }
+
+  const { bitsPerChannel, fixedHeaderLength, totalLength, salt, iv } = selected;
+
+  const fullPacket = extractBytes(image.data, totalLength, {
+    seed,
+    bitsPerChannel,
+  });
 
   const ciphertext = fullPacket.slice(fixedHeaderLength);
 

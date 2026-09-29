@@ -84,8 +84,12 @@ export function embedBytes(
     let value = 0;
     for (let offset = 0; offset < bitsPerChannel; offset++) {
       const bit = bits[bitIndex + offset];
+      // Always shift so a short final group is zero-padded on the right.
+      // The old code skipped the shift for missing bits, which stored the
+      // tail right-aligned and made extraction misread it for 3-bit mode.
+      value <<= 1;
       if (bit !== undefined) {
-        value = (value << 1) | bit;
+        value |= bit;
       }
     }
 
@@ -122,6 +126,7 @@ export function extractBytes(
     const value = pixels[idx] & mask;
 
     for (let offset = 0; offset < bitsPerChannel; offset++) {
+      if (bitIndex + offset >= bitCount) break;
       bits[bitIndex + offset] = (value >> (bitsPerChannel - 1 - offset)) & 1;
     }
   }
