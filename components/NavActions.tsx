@@ -52,6 +52,7 @@ export default function NavActions() {
   const pathname = usePathname();
   const embedActive = pathname === "/embed";
   const extractActive = pathname === "/extract";
+  const batchActive = pathname === "/batch";
 
   return (
     <div className="flex items-center gap-3 max-[700px]:gap-2">
@@ -79,6 +80,19 @@ export default function NavActions() {
       >
         <span className="max-[700px]:hidden">Extract</span>
         <ExtractIcon />
+      </TransitionLink>
+
+      <TransitionLink
+        href="/batch"
+        aria-current={batchActive ? "page" : undefined}
+        className={`${linkClassName} ${
+          batchActive
+            ? "border-[#f3b83f] bg-[#f3b83f] text-[#19150b] hover:border-[#ffc95a] hover:bg-[#ffc95a]"
+            : "border-[#303238] bg-transparent text-[#efeee9] hover:border-[#4a4c53] hover:bg-[#1d1f24]"
+        }`}
+      >
+        <span className="max-[700px]:hidden">Uji Massal</span>
+        <span aria-hidden="true" className="font-mono text-[0.8rem]">∑</span>
       </TransitionLink>
     </div>
   );
