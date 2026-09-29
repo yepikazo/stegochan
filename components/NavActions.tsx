@@ -2,48 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { TransitionLink } from "@/components/CinematicNavigation";
-
-function LockIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="16" height="12" x="4" y="10" rx="2" />
-      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-    </svg>
-  );
-}
-
-function ExtractIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 4V2" />
-      <path d="M12 22v-2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 17.66 1.41 1.41" />
-    </svg>
-  );
-}
+import { ExtractIcon, LockIcon } from "@/components/icons";
 
 const linkClassName =
   "inline-flex min-h-11 items-center justify-center gap-2.5 rounded-lg border px-5 text-[0.82rem] font-semibold no-underline transition hover:-translate-y-px max-[700px]:min-h-10 max-[700px]:px-[13px]";

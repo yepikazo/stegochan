@@ -1,143 +1,211 @@
-# StegoChan
+# StegoCHAN
 
-**C**overt **H**iding of **A**ssets in **N**oise
+**Steganography Covert Hiding of Assets in Noise** — aplikasi web steganografi citra LSB dengan enkripsi AES-256-GCM, pengacakan posisi berbasis stego-key, varian m-bit (1/2/3), dan pengujian massal otomatis ke Excel.
 
-StegoChan adalah aplikasi web untuk menyembunyikan pesan di dalam citra menggunakan teknik steganografi LSB (Least Significant Bit) dengan tambahan lapisan keamanan dan validasi. Proses penyisipan, enkripsi, dan ekstraksi berjalan sepenuhnya di sisi klien dalam browser, tanpa mengirim data ke server apapun.
+Tugas Proyek Aplikasi Kriptografi · **Topik B. Steganografi** + pengayaan **varian m-bit LSB beserta analisis trade-off kapasitas–PSNR** · Mata kuliah Keamanan Informasi, Program Studi Informatika, Fakultas Teknik, Universitas Siliwangi.
+
+> Seluruh proses embed, ekstrak, dan uji berjalan **100% di browser** (Web Crypto API + Canvas API). Tidak ada backend, database, atau upload ke server.
+
+---
 
 ## Daftar Isi
 
-- [Fitur Utama](#fitur-utama)
-- [Cara Kerja](#cara-kerja)
-- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-- [Instalasi](#instalasi)
+- [Fitur](#fitur)
+- [Arsitektur & Cara Kerja](#arsitektur--cara-kerja)
+- [Teknologi](#teknologi)
+- [Instalasi & Menjalankan](#instalasi--menjalankan)
 - [Penggunaan](#penggunaan)
 - [Format Paket Data](#format-paket-data)
-- [Kapasitas dan Evaluasi Kualitas](#kapasitas-dan-evaluasi-kualitas)
-- [Batasan](#batasan)
-- [Roadmap](#roadmap)
+- [Kapasitas & Kualitas](#kapasitas--kualitas)
+- [Pengujian & Excel](#pengujian--excel)
+- [Keamanan & Batasan](#keamanan--batasan)
+- [Struktur Proyek](#struktur-proyek)
+- [Tim](#tim)
 
-## Fitur Utama
+---
 
-- **LSB steganography pada citra PNG/BMP** — pesan disisipkan ke bit paling tidak signifikan dari piksel gambar.
-- **Enkripsi end-to-end** — pesan dienkripsi menggunakan AES-GCM sebelum disisipkan ke dalam cover image. Password digunakan untuk menghasilkan kunci dan juga seed urutan piksel.
-- **Header penanda panjang pesan** — setiap payload memiliki informasi struktur yang memungkinkan proses ekstraksi membaca panjang data secara aman sebelum dekripsi.
-- **Posisi piksel diacak menggunakan PRNG** — urutan embedding dan extraction berbasis seed dari stego-key, sehingga traversal piksel tidak lagi linear.
-- **Validasi kapasitas otomatis** — aplikasi menghitung kapasitas gambar dan menolak payload yang melebihi batas sebelum proses penyisipan dimulai.
-- **Tampilan cover dan stego berdampingan** — hasil penyisipan dapat dilihat langsung dalam satu tampilan agar pengguna bisa membandingkan perubahan.
-- **Metrik kualitas visual** — aplikasi menampilkan MSE dan PSNR untuk membandingkan cover dan stego image.
-- **Password toggle Show/Hide** — field password bisa ditampilkan atau disembunyikan dengan teks "Show" / "Hide" tanpa ikon visual.
-- **Zero server-side processing** — seluruh proses memakai Web Crypto API dan Canvas API bawaan browser.
+## Fitur
 
-## Cara Kerja
+**Steganografi inti**
+
+- Embed dan ekstrak pesan teks pada citra **PNG/JPG** (output selalu **PNG lossless** agar bit LSB utuh).
+- Varian **m-bit LSB (1, 2, 3 bit per kanal R/G/B)** — 2-bit memberi ±2× kapasitas, 3-bit ±3× kapasitas dibanding 1-bit.
+- Header biner berisi magic, versi, mode, salt, IV, dan panjang ciphertext — ekstraksi berhenti tepat tanpa menebak.
+- Posisi penyisipan **diacak dengan PRNG + Fisher–Yates** dari stego-key, bukan traversal linear.
+- Validasi kapasitas otomatis — pesan yang melebihi daya tampung ditolak sebelum embed.
+
+**Kriptografi**
+
+- **AES-256-GCM** (ciphertext + tag autentikasi 16 byte): password salah atau 1 bit diubah → dekripsi ditolak.
+- Kunci diturunkan via **PBKDF2-HMAC-SHA256, 600.000 iterasi**, salt acak 16 byte; IV/nonce acak 12 byte setiap embed (Web Crypto API).
+
+**Evaluasi & steganalisis**
+
+- Tampilan **cover vs stego berdampingan**, metrik **MSE & PSNR** (ambang layak ≥ 30 dB), panel **trade-off 1-bit vs mode terpilih**.
+- **Histogram R/G/B** cover vs stego dan **visualisasi bidang LSB**.
+- Halaman **Uji Massal (`/batch`)**: multi-cover × 3 pesan × 3 mode → tabel MSE/PSNR + ekspor **XLSX** (`PSNR_MSE`, `Uji_JPEG`, `Metadata`) dan CSV.
+
+---
+
+## Arsitektur & Cara Kerja
+
+Aplikasi Next.js App Router tanpa backend. Alur inti berada di `lib/stego/index.ts:hideMessage` dan `lib/stego/index.ts:revealMessage`.
 
 ```text
-Sisipkan:  Pesan → Enkripsi AES-GCM → Header + Payload → PRNG order piksel → LSB embed → PNG output
-Ungkap:    Gambar stego → PRNG order piksel → Baca header → Ekstrak payload → Dekripsi → Pesan asli
+Embed:   Teks → AES-GCM → paket [header + ciphertext] → bit stream
+         → sebar ke LSB channel sesuai urutan PRNG(seed) → ImageData stego → PNG
+Extract: Stego → urutan PRNG(seed) → baca header (auto-deteksi 1/2/3-bit)
+         → baca ciphertext → verifikasi + dekripsi AES-GCM → teks asli
+Batch:   N cover × 3 pesan × mode terpilih → MSE/PSNR per kombinasi → XLSX
 ```
 
-1. **Persiapan pesan** — teks diubah ke byte dan dienkripsi dengan password.
-2. **Pembuatan paket** — data dienkripsi dikemas bersama metadata seperti salt, IV, dan panjang payload untuk keperluan ekstraksi yang aman.
-3. **Urutan piksel teracak** — `stegoKey` dipakai sebagai seed untuk menciptakan urutan piksel yang berbeda-beda, bukan sekadar traversal linear.
-4. **Penyisipan LSB** — bit payload ditulis ke bit paling tidak signifikan piksel yang sudah diacak.
-5. **Ekstraksi** — proses dibalik: ambil bit dari posisi yang sama, baca header, ekstrak ciphertext, lalu dekripsi menggunakan password yang sama.
-6. **Validasi** — aplikasi mengecek kapasitas, menampilkan hasil visual, serta mengukur kualitas stego image dengan MSE dan PSNR.
+Detail penting yang perlu dipahami:
 
-## Teknologi yang Digunakan
+1. **Satu fase, satu mode.** Seluruh paket (header + ciphertext) ditanam dengan `bitsPerChannel` yang sama. Ekstraksi mencoba kandidat `1, 2, 3` dan memakai yang header-nya valid (magic `STG1`, versi, dan mode cocok).
+2. **Setiap embed unik.** Salt dan IV acak membuat ciphertext dan urutan bit berbeda walau pesan dan password sama.
+3. **Alpha tidak disentuh** dan dipaksa `255` saat decode agar premultiplikasi kanvas tidak merusak LSB RGB.
 
-| Lapisan | Teknologi |
-|---|---|
-| Framework | Next.js (App Router) + TypeScript |
-| Interface | React 19 + CSS custom |
-| Kriptografi | Web Crypto API — AES-GCM, PBKDF2 |
-| Manipulasi citra | Canvas API + ImageData |
-| Steganografi | LSB dengan urutan piksel berbasis PRNG |
-| Evaluasi kualitas | MSE dan PSNR |
+---
 
-Semua proses inti dilakukan di browser tanpa backend atau database.
+## Teknologi
 
-## Instalasi
+| Lapisan             | Teknologi                                                     |
+| ------------------- | ------------------------------------------------------------- |
+| Framework / bahasa  | Next.js 16 (App Router), React 19, TypeScript                 |
+| UI                  | CSS kustom, navigasi sinematik, grafik histogram mandiri      |
+| Kriptografi         | Web Crypto API: AES-256-GCM, PBKDF2-HMAC-SHA256               |
+| Citra               | Canvas API + `ImageData`                                      |
+| Steganografi        | LSB m-bit tulisan sendiri + PRNG/Fisher–Yates tulisan sendiri |
+| Uji massal & ekspor | `xlsx` (SheetJS) via dynamic import, CSV manual               |
+| Uji unit            | Vitest (12 test: bits, capacity, crypto, header, lsb)         |
 
-Prasyarat: Node.js 20 atau versi yang lebih baru.
+---
+
+## Instalasi & Menjalankan
+
+Prasyarat: **Node.js 20+** dan npm.
 
 ```bash
-git clone <url-repository>
+git clone https://github.com/<username>/stegochan.git
 cd stegochan
 npm install
 npm run dev
 ```
 
-Buka alamat berikut di browser:
+Buka `http://localhost:3000`. Perintah lain:
 
-```text
-http://localhost:3000
+```bash
+npm test        # vitest, 12 unit test fungsi inti
+npm run lint    # eslint
+npm run build && npm start  # build produksi
 ```
+
+> Jalankan lewat `localhost` atau HTTPS agar Web Crypto API tersedia.
+
+---
 
 ## Penggunaan
 
-### 1. Menyisipkan pesan
+### 1. Embed — `/embed`
 
-1. Buka halaman **Embed**.
-2. Unggah cover image.
-3. Masukkan pesan yang ingin disembunyikan.
-4. Masukkan password / stego-key.
-5. Tekan **Embed pesan**.
-6. Lihat hasil cover dan stego secara berdampingan.
-7. Unduh output dalam format PNG.
+1. Unggah cover PNG/JPG (maks 20 MB).
+2. Pilih mode **1/2/3-bit**, tulis pesan, isi password/stego-key.
+3. Tekan **Embed pesan**. Jika pesan melebihi kapasitas, pesan error kapasitas muncul beserta angka byte.
+4. Bandingkan cover vs stego, catat **MSE/PSNR**, histogram, dan bidang LSB. Unduh hasil via **Unduh PNG**.
 
-### 2. Mengekstraksi pesan
+### 2. Extract — `/extract`
 
-1. Buka halaman **Extract**.
-2. Unggah stego image.
-3. Masukkan password yang sama saat proses embedding.
-4. Tekan **Extract pesan**.
-5. Aplikasi akan menampilkan pesan asli jika password dan data valid.
+1. Unggah stego PNG + password yang sama.
+2. Tekan **Ungkap pesan**. Mode m-bit terdeteksi otomatis dari header.
+3. Kunci salah atau citra rusak → error `NO_DATA_FOUND` / `WRONG_PASSWORD` (lihat [Keamanan & Batasan](#keamanan--batasan)).
 
-### 3. Password toggle
+### 3. Uji massal — `/batch`
 
-Pada kedua halaman, field password dapat diubah mode tampilannya dengan tombol **Show** dan **Hide**. Ini memudahkan pengguna untuk melihat atau menyembunyikan input password tanpa ikon mata.
+1. **Blok 1:** tambah beberapa cover (disarankan 5).
+2. **Blok 2:** siapkan 3 pesan (`100 B / 1 KB / 5 KB`, bisa diedit), centang mode, isi satu password untuk semua run.
+3. Tekan **Jalankan N kombinasi** (over-kapasitas otomatis `SKIP`), pantau progres dan rata-rata PSNR per mode.
+4. **Unduh XLSX/CSV** untuk bahan BAB V laporan.
+
+---
 
 ## Format Paket Data
 
-Payload yang disisipkan mengikuti struktur biner yang terdefinisi untuk menjaga integritas dan keandalan ekstraksi.
+Byte stream yang benar-benar ditanam (`lib/stego/header.ts:buildPacket`):
 
-| Field | Panjang | Keterangan |
-|---|---|---|
-| Magic bytes | 4 byte | Penanda format paket |
-| Versi | 1 byte | Format versi data |
-| Salt | 16 byte | Digunakan untuk derivasi kunci PBKDF2 |
-| IV | 12 byte | Nonce AES-GCM |
-| Panjang ciphertext | 4 byte | Ukuran payload terenkripsi |
-| Ciphertext | variabel | Data terenkripsi + autentikasi tag |
+| Field              | Panjang            | Keterangan                            |
+| ------------------ | ------------------ | ------------------------------------- |
+| Magic              | 4 byte             | ASCII `STG1` (`53 54 47 31`)          |
+| Versi              | 1 byte             | `1` (legacy, khusus 1-bit) atau `2`   |
+| Mode LSB           | 1 byte\*           | `1/2/3`, hanya ada pada versi 2       |
+| Salt               | 16 byte            | Derivasi kunci PBKDF2                 |
+| IV                 | 12 byte            | Nonce AES-GCM                         |
+| Panjang ciphertext | 4 byte             | `uint32` big-endian                   |
+| Ciphertext + tag   | variabel + 16 byte | Hasil AES-GCM beserta tag autentikasi |
 
-Dengan format ini, proses ekstraksi dapat membaca header terlebih dahulu, memastikan panjang data, lalu melakukan dekripsi jika password benar.
+Header tetap: **37 byte** (1-bit) atau **38 byte** (2/3-bit). Kapasitas usable = kapasitas mentah − header − tag GCM.
 
-## Kapasitas dan Evaluasi Kualitas
+---
 
-- **Kapasitas maksimum** dihitung berdasarkan dimensi gambar dan jumlah bit yang dapat digunakan untuk menyisipkan payload.
-- **Validasi otomatis** menolak pesan yang melebihi kapasitas gambar yang dipilih.
-- **Analisis kualitas** dilakukan dengan dua metrik utama:
-  - MSE (Mean Squared Error)
-  - PSNR (Peak Signal-to-Noise Ratio)
-- **Tampilan hasil** membandingkan cover image dan stego image secara langsung, sehingga pengguna dapat mengevaluasi perubahan visual dengan lebih mudah.
+## Kapasitas & Kualitas
 
-## Batasan
+```text
+Kapasitas_mentah  = floor(W × H × 3 × m / 8)   byte
+Kapasitas_usable  = Kapasitas_mentah − header(m) − 16   byte
+MSE  = (1/n) × Σ (cover_i − stego_i)²,  n = W × H × 4 (RGBA)
+PSNR = 10 × log10(255² / MSE)   dB
+```
 
-- **Output terbaik berupa PNG** karena format ini bersifat lossless dan menjaga integritas bit LSB.
-- **Penggunaan JPEG tidak disarankan untuk hasil akhir** karena kompresi lossy dapat merusak bit yang disisipkan.
-- **Kapasitas terbatas** oleh resolusi gambar. Semakin besar ukuran citra, semakin banyak data yang bisa disembunyikan.
-- **Keamanan bergantung pada password** — password yang salah akan menghasilkan dekripsi yang gagal dan mencegah pembacaan payload asli.
-- **Steganalisis lanjutan masih terbatas** — proteksi saat ini berfokus pada enkripsi dan urutan piksel acak, bukan pada skema adaptif yang lebih kompleks.
+Contoh citra 512×512 mode 1-bit: mentah 98.304 B, usable ±98.251 B. Menaikkan `m` melipatgandakan kapasitas tetapi menurunkan PSNR karena 2–3 bit terbawah diubah, bukan 1 bit. Ambang visual mengikuti materi kuliah: **PSNR ≥ 30 dB**.
 
-## Roadmap
+---
 
-- [x] LSB steganography dengan enkripsi payload
-- [x] Header untuk panjang data dan validasi ekstraksi
-- [x] Urutan piksel acak berbasis PRNG dan stego-key
-- [x] Kapasitas dan validasi ukuran pesan
-- [x] Tampilan cover dan stego berdampingan
-- [x] Metrik MSE dan PSNR
-- [x] Toggle password dengan teks Show/Hide
-- [ ] Uji coba lebih lanjut pada beberapa citra dan ukuran payload
-- [ ] Analisis histogram dan perbandingan visual lanjutan
-- [ ] Uji ketahanan terhadap format lossy seperti JPEG
-- [ ] Fitur tambahan seperti LSB adaptif atau analisis steganalisis lanjutan
+## Pengujian & Excel
+
+Halaman `/batch` menghasilkan workbook `StegoChan_Uji_<waktu>.xlsx`:
+
+| Sheet      | Isi relevan                                                                                                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `PSNR_MSE` | Tabel utama: No, Citra, Dimensi, Mode m, Pesan, Byte, MSE, PSNR, Lolos 30dB, Status                                                    |
+| `Uji_JPEG` | Template kerapuhan: kontrol PNG (berhasil) + baris JPG Q70 untuk diisi manual (stego → save JPG → extract di `/extract` → catat gagal) |
+| `Metadata` | Waktu uji, daftar citra/pesan, total OK/SKIP/FAIL                                                                                      |
+
+Protokol yang disarankan untuk laporan: **5 citra × 3 pesan × 3 mode**, 1 password tetap, lalu buat grafik kapasitas vs PSNR dari sheet `PSNR_MSE`. Histogram dan bidang LSB tidak diangkakan di Excel — sertakan sebagai screenshot berdampingan di laporan dengan verdict (`nyaris identik` / `geser ringan`).
+
+---
+
+## Keamanan & Batasan
+
+- **Kunci salah bermakna ganda.** Karena password sekaligus menjadi seed PRNG, kunci yang salah mengacak ulang urutan baca → umum muncul `NO_DATA_FOUND`. Error `WRONG_PASSWORD` murni hanya terlihat bila seed benar tetapi password dekripsi salah (mis. stego-key dipisah).
+- **Jangan simpan ulang stego sebagai JPEG.** Kompresi DCT-kuantisasi menghancurkan LSB; ekstraksi dipastikan gagal. Ini justru bahan uji kerapuhan.
+- **Bukan skema adaptif/robust.** Proteksi mengandalkan enkripsi + pengacakan posisi; tidak tahan steganalisis statistik lanjut (chi-square) atau kompresi.
+- Tidak ada kunci, password, atau kunci privat di dalam kode maupun repo.
+
+---
+
+## Struktur Proyek
+
+```text
+app/
+  page.tsx                 # landing
+  embed/page.tsx           # embed + metrik + histogram + LSB
+  extract/page.tsx         # ekstrak + preview bidang LSB
+  batch/page.tsx           # orkestrator uji massal (tipis)
+  batch/components/        # CoverSection, MessageSection, BatchActions, SummaryCards, ResultsTable
+lib/
+  image.ts                 # decode PNG/JPG → ImageData, ekspor PNG
+  stego/                   # bits, capacity, crypto, header, lsb, histogram, lsb-plane, index
+  batch/                   # types, utils, image-loader, runner, export (logika /batch)
+hooks/useImageSelection.ts # state gambar + preview sekali pakai
+components/                # navigasi, histogram chart, dropzone, alert
+```
+
+---
+
+## Tim
+
+| Nama                        | NPM          |
+| --------------------------- | ------------ |
+| Muhammad Rifki Yusria Hatta | 247006111065 |
+| Yasraf Syifa Maulana        | 247006111070 |
+| Fadhel Mohammad Syarushiam  | 247006111074 |
+
