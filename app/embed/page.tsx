@@ -169,7 +169,7 @@ export default function EmbedPage() {
   const [tradeoff, setTradeoff] = useState<{
     capacity1bit: number;
     capacitySelected: number;
-    psnr1bit: number;
+    psnr1bit: number | null;
     psnrSelected: number;
   } | null>(null);
 
@@ -182,6 +182,10 @@ export default function EmbedPage() {
     () =>
       imageData
         ? getUsableCapacityBytes(
+          imageData.width,
+          imageData.height,
+          lsbMode
+        )
           imageData.width,
           imageData.height,
           lsbMode
@@ -201,6 +205,7 @@ export default function EmbedPage() {
     if (!password) {
       return {
         label: "Belum diisi",
+        width: "w-0",
         width: "w-0",
       };
     }
@@ -333,15 +338,28 @@ export default function EmbedPage() {
         bitsPerChannel: lsbMode,
       });
 
-      const baseline = await hideMessage(imageData, message, {
-        password,
-        stegoKey: password,
-        bitsPerChannel: 1,
-      });
-
       const mse = calculateMse(imageData, stego);
       const psnr = calculatePsnr(imageData, stego);
-      const baselinePsnr = calculatePsnr(imageData, baseline);
+
+      const capacity1bit = getUsableCapacityBytes(
+        imageData.width,
+        imageData.height,
+        1
+      );
+
+      let baselinePsnr: number | null = null;
+
+      if (lsbMode === 1) {
+        baselinePsnr = psnr;
+      } else if (messageBytes <= capacity1bit) {
+        const baseline = await hideMessage(imageData, message, {
+          password,
+          stegoKey: password,
+          bitsPerChannel: 1,
+        });
+
+        baselinePsnr = calculatePsnr(imageData, baseline);
+      }
 
       const coverPlane = extractLsbPlane(
         imageData.data,
@@ -358,11 +376,7 @@ export default function EmbedPage() {
       setMetrics({ mse, psnr });
 
       setTradeoff({
-        capacity1bit: getUsableCapacityBytes(
-          imageData.width,
-          imageData.height,
-          1
-        ),
+        capacity1bit,
         capacitySelected: getUsableCapacityBytes(
           imageData.width,
           imageData.height,
@@ -469,10 +483,11 @@ export default function EmbedPage() {
                   setDragActive(false);
                 }}
                 onDrop={handleDrop}
-                className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${dragActive
-                  ? "border-[#f3b83f] bg-[#25272d]"
-                  : "border-[#303238] bg-[#1d1f24] hover:border-[#f3b83f] hover:bg-[#25272d]"
-                  }`}
+                className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${
+                  dragActive
+                    ? "border-[#c28722] bg-[#e4d9bd]"
+                    : "border-[#bcb4a2] bg-[#eee8d9] hover:border-[#968d79] hover:bg-[#e8e0ce]"
+                }`}
               >
                 <input
                   ref={fileInputRef}
@@ -567,8 +582,9 @@ export default function EmbedPage() {
 
               {imageData && (
                 <span
-                  className={`font-mono text-[0.68rem] ${overLimit ? "text-[#e07070]" : "text-[#55565b]"
-                    }`}
+                  className={`font-mono text-[0.68rem] ${
+                    overLimit ? "text-[#b44d4d]" : "text-[#918c80]"
+                  }`}
                 >
                   {formatBytes(messageBytes)} / {formatBytes(capacity)}
                 </span>
@@ -583,10 +599,11 @@ export default function EmbedPage() {
                 return (
                   <label
                     key={mode}
-                    className={`flex cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition ${active
-                      ? "border-[#f3b83f] bg-[#3a2e10] text-[#f3b83f]"
-                      : "border-[#303238] bg-[#1d1f24] text-[#98999e] hover:bg-[#25272d]"
-                      }`}
+                    className={`flex cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                      active
+                        ? "border-[#c28722] bg-[#e4c47e] text-[#30230e]"
+                        : "border-[#c7bfad] bg-[#f0eadc] text-[#656056] hover:bg-[#e8e0ce]"
+                    }`}
                   >
                     <input
                       type="radio"
@@ -615,10 +632,11 @@ export default function EmbedPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tulis pesan yang ingin disembunyikan..."
-              className={`min-h-[150px] w-full resize-y rounded-2xl border bg-[#1d1f24] px-4 py-4 text-[0.9rem] leading-6 text-[#efeee9] outline-none transition placeholder:text-[#4a4c53] ${overLimit
-                ? "border-[#8b3a3a] focus:border-[#7a2828]"
-                : "border-[#303238] focus:border-[#f3b83f]"
-                }`}
+              className={`min-h-[150px] w-full resize-y rounded-2xl border bg-[#f0eadc] px-4 py-4 text-[0.9rem] leading-6 text-[#272622] outline-none transition placeholder:text-[#a29b8d] ${
+                overLimit
+                  ? "border-[#c66a6a] focus:border-[#b54f4f]"
+                  : "border-[#c7bfad] focus:border-[#b78326]"
+              }`}
             />
 
             {overLimit && (
@@ -822,7 +840,7 @@ export default function EmbedPage() {
                       {formatBytes(tradeoff.capacitySelected)}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#55565b]">
+                    <p className="mt-1 text-xs text-[#888174]">
                       1-bit: {formatBytes(tradeoff.capacity1bit)}
                     </p>
                   </div>
@@ -836,7 +854,7 @@ export default function EmbedPage() {
                       {tradeoff.psnrSelected.toFixed(2)} dB
                     </p>
 
-                    <p className="mt-1 text-xs text-[#55565b]">
+                    <p className="mt-1 text-xs text-[#888174]">
                       1-bit: {tradeoff.psnr1bit.toFixed(2)} dB
                     </p>
                   </div>

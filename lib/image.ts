@@ -31,8 +31,17 @@ export async function loadImageFromFile(file: File): Promise<LoadedImage> {
     throw new StegoError("UNSUPPORTED_IMAGE", "File yang dipilih bukan gambar.");
   }
 
-  const bitmap = await createImageBitmap(file).catch(() => {
-    throw new StegoError("UNSUPPORTED_IMAGE", "Gagal membaca gambar. Coba format lain.");
+  const bitmap = await createImageBitmap(
+    file,
+    {
+      colorSpaceConversion: "none",
+      premultiplyAlpha: "none",
+    }
+  ).catch(() => {
+    throw new StegoError(
+      "UNSUPPORTED_IMAGE",
+      "Gagal membaca gambar. Coba format lain."
+    );
   });
 
   if (bitmap.width > MAX_DIMENSION || bitmap.height > MAX_DIMENSION) {
@@ -48,6 +57,7 @@ export async function loadImageFromFile(file: File): Promise<LoadedImage> {
 
   // Force full opacity so alpha premultiplication never touches our RGB LSBs.
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  bitmap.close();
   for (let i = 3; i < imageData.data.length; i += 4) {
     imageData.data[i] = 255;
   }
