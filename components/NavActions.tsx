@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TransitionLink } from "@/components/CinematicNavigation";
 
 function LockIcon() {
   return (
@@ -55,7 +55,7 @@ export default function NavActions() {
 
   return (
     <div className="flex items-center gap-3 max-[700px]:gap-2">
-      <Link
+      <TransitionLink
         href="/embed"
         aria-current={embedActive ? "page" : undefined}
         className={`${linkClassName} ${
@@ -66,9 +66,9 @@ export default function NavActions() {
       >
         <span className="max-[700px]:hidden">Embed</span>
         <LockIcon />
-      </Link>
+      </TransitionLink>
 
-      <Link
+      <TransitionLink
         href="/extract"
         aria-current={extractActive ? "page" : undefined}
         className={`${linkClassName} ${
@@ -79,7 +79,7 @@ export default function NavActions() {
       >
         <span className="max-[700px]:hidden">Extract</span>
         <ExtractIcon />
-      </Link>
+      </TransitionLink>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionLink } from "@/components/CinematicNavigation";
 
 function SignalMark() {
   return (
@@ -179,15 +180,15 @@ export default function HomePage() {
           </p>
 
           <div className="mt-7 flex items-center gap-2.5 max-[700px]:flex-wrap">
-            <Link href="/embed" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#f3b83f] bg-[#f3b83f] px-8 text-[0.84rem] font-semibold text-[#19150b] no-underline transition hover:-translate-y-px hover:border-[#ffc95a] hover:bg-[#ffc95a]">
+            <TransitionLink href="/embed" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#f3b83f] bg-[#f3b83f] px-8 text-[0.84rem] font-semibold text-[#19150b] no-underline transition hover:-translate-y-px hover:border-[#ffc95a] hover:bg-[#ffc95a]">
               <span>Embed</span>
               <LockIcon />
-            </Link>
+            </TransitionLink>
 
-            <Link href="/extract" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#303238] bg-transparent px-8 text-[0.84rem] font-semibold text-[#efeee9] no-underline transition hover:-translate-y-px hover:border-[#4a4c53] hover:bg-[#1d1f24]">
+            <TransitionLink href="/extract" className="inline-flex min-h-11 items-center justify-center gap-[14px] rounded-lg border border-[#303238] bg-transparent px-8 text-[0.84rem] font-semibold text-[#efeee9] no-underline transition hover:-translate-y-px hover:border-[#4a4c53] hover:bg-[#1d1f24]">
               <span>Extract</span>
               <ExtractIcon />
-            </Link>
+            </TransitionLink>
           </div>
         </div>
       </section>

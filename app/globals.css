@@ -1,1 +1,56 @@
 @import "tailwindcss";
+
+@theme {
+	--animate-cinematic-cover: cinematic-cover 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	--animate-cinematic-reveal: cinematic-reveal 400ms cubic-bezier(0.55, 0, 1, 0.45) both;
+	--animate-cinematic-shard-arrive: cinematic-shard-arrive 380ms cubic-bezier(0.22, 1, 0.36, 1) calc(280ms + var(--sd, 0ms)) both;
+	--animate-cinematic-shard-leave: cinematic-shard-leave 200ms cubic-bezier(0.55, 0, 1, 0.45) var(--sd, 0ms) both;
+
+	@keyframes cinematic-cover {
+		from {
+			clip-path: polygon(-50% 0, -50% 0, -100% 100%, -100% 100%);
+		}
+
+		to {
+			clip-path: polygon(-50% 0, 150% 0, 100% 100%, -100% 100%);
+		}
+	}
+
+	@keyframes cinematic-reveal {
+		from {
+			clip-path: polygon(-50% 0, 150% 0, 100% 100%, -100% 100%);
+		}
+
+		to {
+			clip-path: polygon(150% 0, 150% 0, 100% 100%, 100% 100%);
+		}
+	}
+
+	@keyframes cinematic-shard-arrive {
+		from {
+			opacity: 0;
+			transform: translate3d(calc(var(--sx, 0px) * 2.5), calc(var(--sy, 0px) * 2.5), 0) rotate(calc(var(--sr, 0deg) * 1.5)) scale(0.4);
+		}
+
+		55% {
+			opacity: 0.9;
+		}
+
+		to {
+			opacity: 1;
+			transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+		}
+	}
+
+	@keyframes cinematic-shard-leave {
+		from {
+			opacity: 1;
+			transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+		}
+
+		to {
+			opacity: 0;
+			transform: translate3d(calc(var(--sx, 0px) * 1.8), calc(var(--sy, 0px) * 1.8), 0) rotate(calc(var(--sr, 0deg) * 1.2)) scale(1.25);
+		}
+	}
+}

@@ -216,20 +216,20 @@ export default function ExtractPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#ebe4d1] text-[#17181b]">
+    <main className="min-h-screen bg-[#151619] text-[#efeee9]">
       <div className="mx-auto max-w-[920px] px-6 pb-24 pt-12 md:px-10 md:pt-16">
 
         {/* HEADER */}
         <header className="mb-11">
-          <p className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#c28722]">
+          <p className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#f3b83f]">
             Ungkap
           </p>
 
-          <h1 className="mt-2 font-[var(--font-space-grotesk)] text-[2rem] font-semibold tracking-[-0.045em] text-[#17181b] md:text-[2.35rem]">
+          <h1 className="mt-2 font-[var(--font-space-grotesk)] text-[2rem] font-semibold tracking-[-0.045em] text-[#efeee9] md:text-[2.35rem]">
             Baca pesan tersembunyi
           </h1>
 
-          <p className="mt-4 max-w-[760px] text-[0.96rem] leading-7 text-[#69665d]">
+          <p className="mt-4 max-w-[760px] text-[0.96rem] leading-7 text-[#98999e]">
             Unggah stego image dan masukkan stego-key yang sama
             saat embed untuk mengekstrak pesan tersembunyi.
           </p>
@@ -237,7 +237,7 @@ export default function ExtractPage() {
 
         {/* ERROR */}
         {error && (
-          <div className="mb-7 rounded-xl border border-[#d98d8d] bg-[#f8e3df] px-4 py-3 text-sm text-[#873f3f]">
+          <div className="mb-7 rounded-xl border border-[#8b3a3a] bg-[#3b1f1f] px-4 py-3 text-sm text-[#f08080]">
             {error}
           </div>
         )}
@@ -247,12 +247,12 @@ export default function ExtractPage() {
           {/* STEGO IMAGE */}
           <section className="mb-10">
             <div className="mb-3 flex items-center justify-between">
-              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6d695f]">
+              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6e6f74]">
                 Gambar stego
               </label>
 
               {imageData && (
-                <span className="font-mono text-[0.68rem] text-[#918c80]">
+                <span className="font-mono text-[0.68rem] text-[#55565b]">
                   {imageData.width} × {imageData.height}px
                 </span>
               )}
@@ -276,8 +276,8 @@ export default function ExtractPage() {
                 onDrop={handleDrop}
                 className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${
                   dragActive
-                    ? "border-[#c28722] bg-[#e4d9bd]"
-                    : "border-[#bcb4a2] bg-[#eee8d9] hover:border-[#968d79] hover:bg-[#e8e0ce]"
+                    ? "border-[#f3b83f] bg-[#25272d]"
+                    : "border-[#303238] bg-[#1d1f24] hover:border-[#f3b83f] hover:bg-[#25272d]"
                 }`}
               >
                 <input
@@ -288,25 +288,25 @@ export default function ExtractPage() {
                   className="hidden"
                 />
 
-                <div className="mb-4 text-[#8b8679] transition group-hover:text-[#c28722]">
+                <div className="mb-4 text-[#55565b] transition group-hover:text-[#f3b83f]">
                   {dragActive ? <UploadIcon /> : <ImageIcon />}
                 </div>
 
-                <p className="text-[0.95rem] font-medium text-[#302f2c]">
+                <p className="text-[0.95rem] font-medium text-[#efeee9]">
                   {dragActive
                     ? "Lepaskan gambar di sini"
                     : "Pilih atau seret gambar ke sini"}
                 </p>
 
-                <p className="mt-2 font-mono text-[0.67rem] uppercase tracking-[0.08em] text-[#999285]">
+                <p className="mt-2 font-mono text-[0.67rem] uppercase tracking-[0.08em] text-[#55565b]">
                   PNG & JPG · Maks. 20 MB
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-[#c7bfad] bg-[#f0eadc] p-4">
+              <div className="rounded-2xl border border-[#303238] bg-[#1d1f24] p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 
-                  <div className="flex h-[120px] w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#d2c9b7] bg-[#e2dccd] sm:w-[180px]">
+                  <div className="flex h-[120px] w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#303238] bg-[#25272d] sm:w-[180px]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
@@ -318,12 +318,12 @@ export default function ExtractPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-[0.94rem] font-semibold text-[#252421]">
+                        <p className="truncate text-[0.94rem] font-semibold text-[#efeee9]">
                           {selectedFile?.name ?? "Stego image"}
                         </p>
 
                         {selectedFile && (
-                          <p className="mt-1 font-mono text-[0.7rem] text-[#817b6e]">
+                          <p className="mt-1 font-mono text-[0.7rem] text-[#6e6f74]">
                             {imageData?.width} × {imageData?.height}px
                             {" · "}
                             {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
@@ -334,7 +334,7 @@ export default function ExtractPage() {
                       <button
                         type="button"
                         onClick={handleResetImage}
-                        className="shrink-0 rounded-lg px-2 py-1 text-lg leading-none text-[#817b6e] transition hover:bg-[#e1d9c8] hover:text-[#292824]"
+                        className="shrink-0 rounded-lg px-2 py-1 text-lg leading-none text-[#6e6f74] transition hover:bg-[#2a2c32] hover:text-[#efeee9]"
                         aria-label="Hapus gambar"
                       >
                         ×
@@ -344,7 +344,7 @@ export default function ExtractPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="mt-5 text-[0.78rem] font-semibold text-[#a66e15] underline decoration-[#c99a48] underline-offset-4 hover:text-[#7f5410]"
+                      className="mt-5 text-[0.78rem] font-semibold text-[#f3b83f] underline decoration-[#f3b83f] underline-offset-4 hover:text-[#e0a83a]"
                     >
                       Ganti gambar
                     </button>
@@ -365,11 +365,11 @@ export default function ExtractPage() {
           {/* PASSWORD */}
           <section className="mb-8">
             <div className="mb-3 flex items-center justify-between">
-              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6d695f]">
+              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6e6f74]">
                 Password / stego-key
               </label>
 
-              <span className="font-mono text-[0.63rem] uppercase tracking-[0.08em] text-[#918c80]">
+              <span className="font-mono text-[0.63rem] uppercase tracking-[0.08em] text-[#55565b]">
                 AES-256-GCM
               </span>
             </div>
@@ -381,7 +381,7 @@ export default function ExtractPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Kunci yang dipakai saat embed"
                 autoComplete="current-password"
-                className="h-[54px] w-full rounded-2xl border border-[#c7bfad] bg-[#f0eadc] px-4 pr-14 text-[0.9rem] text-[#272622] outline-none transition placeholder:text-[#a29b8d] focus:border-[#b78326]"
+                className="h-[54px] w-full rounded-2xl border border-[#303238] bg-[#1d1f24] px-4 pr-14 text-[0.9rem] text-[#efeee9] outline-none transition placeholder:text-[#4a4c53] focus:border-[#f3b83f]"
               />
 
               <button
@@ -394,13 +394,13 @@ export default function ExtractPage() {
                     ? "Sembunyikan password"
                     : "Tampilkan password"
                 }
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-2 text-[#7d776b] hover:bg-[#e3dccd] hover:text-[#37342e]"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-2 text-[#6e6f74] hover:bg-[#2a2c32] hover:text-[#efeee9]"
               >
                 <EyeIcon hidden={!showPassword} />
               </button>
             </div>
 
-            <p className="mt-2 text-[0.72rem] leading-5 text-[#898274]">
+            <p className="mt-2 text-[0.72rem] leading-5 text-[#55565b]">
               Gunakan password yang sama dengan saat pesan
               disisipkan. Mode LSB akan dibaca otomatis dari header
               paket.
@@ -408,19 +408,19 @@ export default function ExtractPage() {
           </section>
 
           {/* LOCAL SESSION */}
-          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#cfc6b4] bg-[#e7dfcd] px-4 py-3">
+          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#303238] bg-[#1d1f24] px-4 py-3">
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4e9b63] opacity-40" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4e9b63]" />
               </span>
 
-              <span className="font-mono text-[0.67rem] font-medium uppercase tracking-[0.12em] text-[#666156]">
+              <span className="font-mono text-[0.67rem] font-medium uppercase tracking-[0.12em] text-[#98999e]">
                 Sesi lokal aktif
               </span>
             </div>
 
-            <span className="font-mono text-[0.62rem] text-[#969082]">
+            <span className="font-mono text-[0.62rem] text-[#55565b]">
               TANPA LOG
             </span>
           </div>
@@ -429,7 +429,7 @@ export default function ExtractPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] px-5 text-[0.88rem] font-bold text-[#211805] transition hover:bg-[#e7b341] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] px-5 text-[0.88rem] font-bold text-[#19150b] transition hover:bg-[#e7b341] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -444,23 +444,23 @@ export default function ExtractPage() {
 
         {/* LSB PREVIEW */}
         {lsbPreviewUrl && (
-          <section className="mt-14 border-t border-[#c9c0ae] pt-10">
+          <section className="mt-14 border-t border-[#303238] pt-10">
             <div className="mb-6">
-              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.12em] text-[#7d776b]">
+              <p className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.12em] text-[#6e6f74]">
                 Analisis visual
               </p>
 
-              <h2 className="mt-2 font-[var(--font-space-grotesk)] text-[1.35rem] font-semibold tracking-[-0.025em] text-[#292722]">
+              <h2 className="mt-2 font-[var(--font-space-grotesk)] text-[1.35rem] font-semibold tracking-[-0.025em] text-[#efeee9]">
                 Bidang LSB gambar
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-[#777267]">
+              <p className="mt-2 text-sm leading-6 text-[#98999e]">
                 Visualisasi bidang bit paling rendah dari gambar
                 stego yang dipilih.
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-[#c7bfad] bg-[#e1dacc] p-4">
+            <div className="overflow-hidden rounded-2xl border border-[#303238] bg-[#25272d] p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={lsbPreviewUrl}
@@ -473,8 +473,8 @@ export default function ExtractPage() {
 
         {/* RESULT */}
         {message !== null && (
-          <section className="mt-10 border-t border-[#c9c0ae] pt-10">
-            <div className="mb-6 flex items-center gap-2 text-[#3f774b]">
+          <section className="mt-10 border-t border-[#303238] pt-10">
+            <div className="mb-6 flex items-center gap-2 text-[#5aab6e]">
               <CheckIcon />
 
               <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em]">
@@ -482,30 +482,30 @@ export default function ExtractPage() {
               </span>
             </div>
 
-            <div className="rounded-2xl border border-[#c7bfad] bg-[#f0eadc] p-5 md:p-6">
-              <div className="mb-4 flex items-center justify-between border-b border-[#d4ccbb] pb-4">
+            <div className="rounded-2xl border border-[#303238] bg-[#1d1f24] p-5 md:p-6">
+              <div className="mb-4 flex items-center justify-between border-b border-[#303238] pb-4">
                 <div>
-                  <p className="font-mono text-[0.65rem] uppercase tracking-[0.1em] text-[#817b6e]">
+                  <p className="font-mono text-[0.65rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                     Isi pesan
                   </p>
 
-                  <p className="mt-1 text-xs text-[#999285]">
+                  <p className="mt-1 text-xs text-[#55565b]">
                     Payload berhasil didekripsi secara lokal.
                   </p>
                 </div>
 
-                <span className="rounded-full border border-[#b9d0bd] bg-[#e2eee3] px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.08em] text-[#4b7552]">
+                <span className="rounded-full border border-[#2a3d2e] bg-[#1e3324] px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.08em] text-[#5aab6e]">
                   Decrypted
                 </span>
               </div>
 
-              <div className="min-h-[120px] rounded-xl border border-[#d4ccbb] bg-[#e8e1d2] p-4">
-                <p className="whitespace-pre-wrap break-words font-mono text-[0.9rem] leading-7 text-[#302e29]">
+              <div className="min-h-[120px] rounded-xl border border-[#303238] bg-[#25272d] p-4">
+                <p className="whitespace-pre-wrap break-words font-mono text-[0.9rem] leading-7 text-[#efeee9]">
                   {message}
                 </p>
               </div>
 
-              <p className="mt-4 text-[0.7rem] leading-5 text-[#898274]">
+              <p className="mt-4 text-[0.7rem] leading-5 text-[#55565b]">
                 Pesan hanya diproses di browser. Tidak ada payload
                 yang dikirim ke server.
               </p>

@@ -182,10 +182,10 @@ export default function EmbedPage() {
     () =>
       imageData
         ? getUsableCapacityBytes(
-            imageData.width,
-            imageData.height,
-            lsbMode
-          )
+          imageData.width,
+          imageData.height,
+          lsbMode
+        )
         : 0,
     [imageData, lsbMode]
   );
@@ -201,7 +201,7 @@ export default function EmbedPage() {
     if (!password) {
       return {
         label: "Belum diisi",
-                width: "w-0",
+        width: "w-0",
       };
     }
 
@@ -410,20 +410,20 @@ export default function EmbedPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#ebe4d1] text-[#17181b]">
+    <main className="min-h-screen bg-[#151619] text-[#efeee9]">
       <div className="mx-auto max-w-[920px] px-6 pb-24 pt-12 md:px-10 md:pt-16">
 
         {/* HEADER */}
         <header className="mb-11">
-          <p className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#c28722]">
+          <p className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#f3b83f]">
             Sembunyikan
           </p>
 
-          <h1 className="mt-2 font-[var(--font-space-grotesk)] text-[2rem] font-semibold tracking-[-0.045em] text-[#17181b] md:text-[2.35rem]">
+          <h1 className="mt-2 font-[var(--font-space-grotesk)] text-[2rem] font-semibold tracking-[-0.045em] text-[#efeee9] md:text-[2.35rem]">
             Embed pesan pada cover image
           </h1>
 
-          <p className="mt-4 max-w-[760px] text-[0.96rem] leading-7 text-[#69665d]">
+          <p className="mt-4 max-w-[760px] text-[0.96rem] leading-7 text-[#98999e]">
             Metode LSB digunakan untuk menyisipkan payload pada citra
             cover, lalu pesan dienkripsi dengan password / stego-key
             sebelum disisipkan.
@@ -432,7 +432,7 @@ export default function EmbedPage() {
 
         {/* ERROR */}
         {error && (
-          <div className="mb-7 rounded-xl border border-[#d98d8d] bg-[#f8e3df] px-4 py-3 text-sm text-[#873f3f]">
+          <div className="mb-7 rounded-xl border border-[#8b3a3a] bg-[#3b1f1f] px-4 py-3 text-sm text-[#f08080]">
             {error}
           </div>
         )}
@@ -442,12 +442,12 @@ export default function EmbedPage() {
           {/* COVER IMAGE */}
           <section className="mb-10">
             <div className="mb-3 flex items-center justify-between">
-              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6d695f]">
+              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6e6f74]">
                 Gambar penyamaran
               </label>
 
               {imageData && (
-                <span className="font-mono text-[0.68rem] text-[#918c80]">
+                <span className="font-mono text-[0.68rem] text-[#55565b]">
                   Kapasitas {formatBytes(capacity)}
                 </span>
               )}
@@ -469,11 +469,10 @@ export default function EmbedPage() {
                   setDragActive(false);
                 }}
                 onDrop={handleDrop}
-                className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${
-                  dragActive
-                    ? "border-[#c28722] bg-[#e4d9bd]"
-                    : "border-[#bcb4a2] bg-[#eee8d9] hover:border-[#968d79] hover:bg-[#e8e0ce]"
-                }`}
+                className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${dragActive
+                  ? "border-[#f3b83f] bg-[#25272d]"
+                  : "border-[#303238] bg-[#1d1f24] hover:border-[#f3b83f] hover:bg-[#25272d]"
+                  }`}
               >
                 <input
                   ref={fileInputRef}
@@ -483,25 +482,25 @@ export default function EmbedPage() {
                   className="hidden"
                 />
 
-                <div className="mb-4 text-[#8b8679] transition group-hover:text-[#c28722]">
+                <div className="mb-4 text-[#55565b] transition group-hover:text-[#f3b83f]">
                   {dragActive ? <UploadIcon /> : <ImageIcon />}
                 </div>
 
-                <p className="text-[0.95rem] font-medium text-[#302f2c]">
+                <p className="text-[0.95rem] font-medium text-[#efeee9]">
                   {dragActive
                     ? "Lepaskan gambar di sini"
                     : "Pilih atau seret gambar ke sini"}
                 </p>
 
-                <p className="mt-2 font-mono text-[0.67rem] uppercase tracking-[0.08em] text-[#999285]">
+                <p className="mt-2 font-mono text-[0.67rem] uppercase tracking-[0.08em] text-[#55565b]">
                   PNG & JPG · Maks. 20 MB
                 </p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-[#c7bfad] bg-[#f0eadc] p-4">
+              <div className="rounded-2xl border border-[#303238] bg-[#1d1f24] p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 
-                  <div className="flex h-[120px] w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#d2c9b7] bg-[#e2dccd] sm:w-[180px]">
+                  <div className="flex h-[120px] w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#303238] bg-[#25272d] sm:w-[180px]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
@@ -513,12 +512,12 @@ export default function EmbedPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-[0.94rem] font-semibold text-[#252421]">
+                        <p className="truncate text-[0.94rem] font-semibold text-[#efeee9]">
                           {selectedFile?.name ?? "Cover image"}
                         </p>
 
                         {imageData && (
-                          <p className="mt-1 font-mono text-[0.7rem] text-[#817b6e]">
+                          <p className="mt-1 font-mono text-[0.7rem] text-[#6e6f74]">
                             {imageData.width} × {imageData.height}px
                             {" · "}
                             {selectedFile
@@ -531,7 +530,7 @@ export default function EmbedPage() {
                       <button
                         type="button"
                         onClick={handleResetImage}
-                        className="shrink-0 rounded-lg px-2 py-1 text-lg leading-none text-[#817b6e] transition hover:bg-[#e1d9c8] hover:text-[#292824]"
+                        className="shrink-0 rounded-lg px-2 py-1 text-lg leading-none text-[#6e6f74] transition hover:bg-[#2a2c32] hover:text-[#efeee9]"
                         aria-label="Hapus gambar"
                       >
                         ×
@@ -541,7 +540,7 @@ export default function EmbedPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="mt-5 text-[0.78rem] font-semibold text-[#a66e15] underline decoration-[#c99a48] underline-offset-4 hover:text-[#7f5410]"
+                      className="mt-5 text-[0.78rem] font-semibold text-[#f3b83f] underline decoration-[#f3b83f] underline-offset-4 hover:text-[#e0a83a]"
                     >
                       Ganti gambar
                     </button>
@@ -562,15 +561,14 @@ export default function EmbedPage() {
           {/* MESSAGE */}
           <section className="mb-10">
             <div className="mb-3 flex items-center justify-between">
-              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6d695f]">
+              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6e6f74]">
                 Pesan rahasia
               </label>
 
               {imageData && (
                 <span
-                  className={`font-mono text-[0.68rem] ${
-                    overLimit ? "text-[#b44d4d]" : "text-[#918c80]"
-                  }`}
+                  className={`font-mono text-[0.68rem] ${overLimit ? "text-[#e07070]" : "text-[#55565b]"
+                    }`}
                 >
                   {formatBytes(messageBytes)} / {formatBytes(capacity)}
                 </span>
@@ -585,11 +583,10 @@ export default function EmbedPage() {
                 return (
                   <label
                     key={mode}
-                    className={`flex cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                      active
-                        ? "border-[#c28722] bg-[#e4c47e] text-[#30230e]"
-                        : "border-[#c7bfad] bg-[#f0eadc] text-[#656056] hover:bg-[#e8e0ce]"
-                    }`}
+                    className={`flex cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition ${active
+                      ? "border-[#f3b83f] bg-[#3a2e10] text-[#f3b83f]"
+                      : "border-[#303238] bg-[#1d1f24] text-[#98999e] hover:bg-[#25272d]"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -608,7 +605,7 @@ export default function EmbedPage() {
               })}
             </div>
 
-            <p className="mb-4 text-[0.77rem] leading-6 text-[#777267]">
+            <p className="mb-4 text-[0.77rem] leading-6 text-[#98999e]">
               1-bit paling aman secara visual, 2-bit memberi kapasitas
               2×, 3-bit memberi kapasitas 3× namun kualitas visual lebih
               menurun.
@@ -618,15 +615,14 @@ export default function EmbedPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tulis pesan yang ingin disembunyikan..."
-              className={`min-h-[150px] w-full resize-y rounded-2xl border bg-[#f0eadc] px-4 py-4 text-[0.9rem] leading-6 text-[#272622] outline-none transition placeholder:text-[#a29b8d] ${
-                overLimit
-                  ? "border-[#c66a6a] focus:border-[#b54f4f]"
-                  : "border-[#c7bfad] focus:border-[#b78326]"
-              }`}
+              className={`min-h-[150px] w-full resize-y rounded-2xl border bg-[#1d1f24] px-4 py-4 text-[0.9rem] leading-6 text-[#efeee9] outline-none transition placeholder:text-[#4a4c53] ${overLimit
+                ? "border-[#8b3a3a] focus:border-[#7a2828]"
+                : "border-[#303238] focus:border-[#f3b83f]"
+                }`}
             />
 
             {overLimit && (
-              <p className="mt-2 text-[0.75rem] text-[#b44d4d]">
+              <p className="mt-2 text-[0.75rem] text-[#e07070]">
                 Pesan melebihi kapasitas gambar. Gunakan pesan yang
                 lebih pendek atau mode LSB yang lebih tinggi.
               </p>
@@ -636,12 +632,12 @@ export default function EmbedPage() {
           {/* PASSWORD */}
           <section className="mb-8">
             <div className="mb-3 flex items-center justify-between">
-              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6d695f]">
+              <label className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[#6e6f74]">
                 Password / stego-key
               </label>
 
               {password && (
-                <span className="font-mono text-[0.68rem] text-[#8c8679]">
+                <span className="font-mono text-[0.68rem] text-[#55565b]">
                   {passwordStrength.label}
                 </span>
               )}
@@ -654,7 +650,7 @@ export default function EmbedPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password untuk enkripsi dan urutan penyisipan"
                 autoComplete="new-password"
-                className="h-[54px] w-full rounded-2xl border border-[#c7bfad] bg-[#f0eadc] px-4 pr-14 text-[0.9rem] text-[#272622] outline-none transition placeholder:text-[#a29b8d] focus:border-[#b78326]"
+                className="h-[54px] w-full rounded-2xl border border-[#303238] bg-[#1d1f24] px-4 pr-14 text-[0.9rem] text-[#efeee9] outline-none transition placeholder:text-[#4a4c53] focus:border-[#f3b83f]"
               />
 
               <button
@@ -667,7 +663,7 @@ export default function EmbedPage() {
                     ? "Sembunyikan password"
                     : "Tampilkan password"
                 }
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-2 text-[#7d776b] hover:bg-[#e3dccd] hover:text-[#37342e]"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center rounded-lg p-2 text-[#6e6f74] hover:bg-[#2a2c32] hover:text-[#efeee9]"
               >
                 <EyeIcon hidden={!showPassword} />
               </button>
@@ -675,32 +671,32 @@ export default function EmbedPage() {
 
             {/* PASSWORD STRENGTH */}
             <div className="mt-3 flex items-center gap-3">
-              <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[#d2c9b7]">
+              <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[#303238]">
                 <div
-                  className={`h-full rounded-full bg-[#b78326] transition-all ${passwordStrength.width}`}
+                  className={`h-full rounded-full bg-[#f3b83f] transition-all ${passwordStrength.width}`}
                 />
               </div>
 
-              <span className="font-mono text-[0.62rem] uppercase tracking-[0.08em] text-[#8d877a]">
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.08em] text-[#55565b]">
                 AES-256-GCM
               </span>
             </div>
           </section>
 
           {/* LOCAL SESSION */}
-          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#cfc6b4] bg-[#e7dfcd] px-4 py-3">
+          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#303238] bg-[#1d1f24] px-4 py-3">
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4e9b63] opacity-40" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4e9b63]" />
               </span>
 
-              <span className="font-mono text-[0.67rem] font-medium uppercase tracking-[0.12em] text-[#666156]">
+              <span className="font-mono text-[0.67rem] font-medium uppercase tracking-[0.12em] text-[#98999e]">
                 Sesi lokal aktif
               </span>
             </div>
 
-            <span className="font-mono text-[0.62rem] text-[#969082]">
+            <span className="font-mono text-[0.62rem] text-[#55565b]">
               TANPA LOG
             </span>
           </div>
@@ -709,7 +705,7 @@ export default function EmbedPage() {
           <button
             type="submit"
             disabled={loading || overLimit}
-            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] px-5 text-[0.88rem] font-bold text-[#211805] transition hover:bg-[#e7b341] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] px-5 text-[0.88rem] font-bold text-[#19150b] transition hover:bg-[#e7b341] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -724,10 +720,10 @@ export default function EmbedPage() {
 
         {/* RESULT */}
         {resultUrl && (
-          <section className="mt-14 border-t border-[#c9c0ae] pt-10">
+          <section className="mt-14 border-t border-[#303238] pt-10">
 
             <div className="mb-7">
-              <div className="mb-2 flex items-center gap-2 text-[#3f774b]">
+              <div className="mb-2 flex items-center gap-2 text-[#5aab6e]">
                 <CheckIcon />
 
                 <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em]">
@@ -735,11 +731,11 @@ export default function EmbedPage() {
                 </span>
               </div>
 
-              <h2 className="font-[var(--font-space-grotesk)] text-[1.55rem] font-semibold tracking-[-0.035em] text-[#252421]">
+              <h2 className="font-[var(--font-space-grotesk)] text-[1.55rem] font-semibold tracking-[-0.035em] text-[#efeee9]">
                 Pesan berhasil disisipkan
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-[#777267]">
+              <p className="mt-2 text-sm leading-6 text-[#98999e]">
                 Payload telah dienkripsi dan disisipkan ke dalam
                 cover image menggunakan metode LSB.
               </p>
@@ -748,11 +744,11 @@ export default function EmbedPage() {
             {/* IMAGE COMPARISON */}
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                   Cover image
                 </p>
 
-                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#c7bfad] bg-[#e1dacc] p-3">
+                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#303238] bg-[#25272d] p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl ?? resultUrl}
@@ -763,11 +759,11 @@ export default function EmbedPage() {
               </div>
 
               <div>
-                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                   Stego image
                 </p>
 
-                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#c7bfad] bg-[#e1dacc] p-3">
+                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#303238] bg-[#25272d] p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={resultUrl}
@@ -781,22 +777,22 @@ export default function EmbedPage() {
             {/* METRICS */}
             {metrics && (
               <div className="mt-7 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-[#c7bfad] bg-[#f0eadc] p-4">
-                  <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#817b6e]">
+                <div className="rounded-xl border border-[#303238] bg-[#1d1f24] p-4">
+                  <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                     MSE
                   </p>
 
-                  <p className="mt-2 text-xl font-semibold text-[#292722]">
+                  <p className="mt-2 text-xl font-semibold text-[#efeee9]">
                     {metrics.mse.toFixed(4)}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-[#c7bfad] bg-[#f0eadc] p-4">
-                  <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#817b6e]">
+                <div className="rounded-xl border border-[#303238] bg-[#1d1f24] p-4">
+                  <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                     PSNR
                   </p>
 
-                  <p className="mt-2 text-xl font-semibold text-[#292722]">
+                  <p className="mt-2 text-xl font-semibold text-[#efeee9]">
                     {metrics.psnr.toFixed(2)} dB
                   </p>
                 </div>
@@ -805,42 +801,42 @@ export default function EmbedPage() {
 
             {/* TRADEOFF */}
             {tradeoff && (
-              <div className="mt-10 border-t border-[#c9c0ae] pt-8">
-                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#292722]">
+              <div className="mt-10 border-t border-[#303238] pt-8">
+                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#efeee9]">
                   Analisis Trade-off
                 </h2>
 
-                <p className="mt-2 max-w-[720px] text-sm leading-6 text-[#777267]">
+                <p className="mt-2 max-w-[720px] text-sm leading-6 text-[#98999e]">
                   Mode yang lebih tinggi meningkatkan kapasitas
                   payload, tetapi menurunkan kualitas visual yang
                   terlihat dari perubahan PSNR dibanding mode 1-bit.
                 </p>
 
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-xl border border-[#c7bfad] bg-[#f0eadc] p-5">
-                    <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#817b6e]">
+                  <div className="rounded-xl border border-[#303238] bg-[#1d1f24] p-5">
+                    <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       Kapasitas
                     </p>
 
-                    <p className="mt-2 text-xl font-semibold text-[#292722]">
+                    <p className="mt-2 text-xl font-semibold text-[#efeee9]">
                       {formatBytes(tradeoff.capacitySelected)}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#888174]">
+                    <p className="mt-1 text-xs text-[#55565b]">
                       1-bit: {formatBytes(tradeoff.capacity1bit)}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-[#c7bfad] bg-[#f0eadc] p-5">
-                    <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#817b6e]">
+                  <div className="rounded-xl border border-[#303238] bg-[#1d1f24] p-5">
+                    <p className="font-mono text-[0.64rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       PSNR
                     </p>
 
-                    <p className="mt-2 text-xl font-semibold text-[#292722]">
+                    <p className="mt-2 text-xl font-semibold text-[#efeee9]">
                       {tradeoff.psnrSelected.toFixed(2)} dB
                     </p>
 
-                    <p className="mt-1 text-xs text-[#888174]">
+                    <p className="mt-1 text-xs text-[#55565b]">
                       1-bit: {tradeoff.psnr1bit.toFixed(2)} dB
                     </p>
                   </div>
@@ -850,12 +846,12 @@ export default function EmbedPage() {
 
             {/* LSB ANALYSIS */}
             {lsbUrls && (
-              <div className="mt-10 border-t border-[#c9c0ae] pt-8">
-                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#292722]">
+              <div className="mt-10 border-t border-[#303238] pt-8">
+                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#efeee9]">
                   Steganalisis Visual
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#777267]">
+                <p className="mt-2 text-sm leading-6 text-[#98999e]">
                   Bidang LSB cover biasanya masih menampilkan pola
                   yang lebih halus, sedangkan bidang LSB stego
                   cenderung terlihat lebih acak karena perubahan bit
@@ -864,26 +860,26 @@ export default function EmbedPage() {
 
                 <div className="mt-5 grid gap-5 md:grid-cols-2">
                   <div>
-                    <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                    <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       LSB cover
                     </p>
 
                     <img
                       src={lsbUrls.cover}
                       alt="Bidang LSB cover"
-                      className="w-full rounded-xl border border-[#c7bfad] bg-[#191919] object-contain"
+                      className="w-full rounded-xl border border-[#303238] bg-[#191919] object-contain"
                     />
                   </div>
 
                   <div>
-                    <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                    <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       LSB stego
                     </p>
 
                     <img
                       src={lsbUrls.stego}
                       alt="Bidang LSB stego"
-                      className="w-full rounded-xl border border-[#c7bfad] bg-[#191919] object-contain"
+                      className="w-full rounded-xl border border-[#303238] bg-[#191919] object-contain"
                     />
                   </div>
                 </div>
@@ -892,12 +888,12 @@ export default function EmbedPage() {
 
             {/* HISTOGRAM */}
             {histograms && (
-              <div className="mt-10 border-t border-[#c9c0ae] pt-8">
-                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#292722]">
+              <div className="mt-10 border-t border-[#303238] pt-8">
+                <h2 className="font-[var(--font-space-grotesk)] text-lg font-semibold tracking-[-0.02em] text-[#efeee9]">
                   Perbandingan Histogram
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#777267]">
+                <p className="mt-2 text-sm leading-6 text-[#98999e]">
                   Histogram cover dan stego yang nyaris identik
                   menunjukkan bahwa penyisipan LSB tidak meninggalkan
                   perubahan statistik yang mencolok.
@@ -905,7 +901,7 @@ export default function EmbedPage() {
 
                 <div className="mt-5 space-y-6">
                   <div>
-                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       Cover image
                     </p>
 
@@ -931,7 +927,7 @@ export default function EmbedPage() {
                   </div>
 
                   <div>
-                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#7d776b]">
+                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
                       Stego image
                     </p>
 
@@ -964,13 +960,13 @@ export default function EmbedPage() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] text-sm font-bold text-[#211805] transition hover:bg-[#e7b341]"
+                className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#dca52e] text-sm font-bold text-[#19150b] transition hover:bg-[#e7b341]"
               >
                 <DownloadIcon />
                 Unduh PNG
               </button>
 
-              <p className="mt-3 text-center text-[0.72rem] leading-5 text-[#898274]">
+              <p className="mt-3 text-center text-[0.72rem] leading-5 text-[#55565b]">
                 File output tetap dalam format PNG untuk menjaga
                 integritas bit LSB. Jika disimpan ulang ke JPEG,
                 payload dapat rusak atau tidak bisa diekstraksi.
