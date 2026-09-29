@@ -154,11 +154,6 @@ export default function HomePage() {
           HERO
           ===================================================== */}
       <section className="relative flex min-h-[590px] items-center max-[900px]:min-h-0">
-        <div className="pointer-events-none absolute -right-[90px] -bottom-[150px] h-[370px] w-[370px] max-[900px]:-right-[190px] max-[900px]:-bottom-[180px] max-[900px]:opacity-70 max-[700px]:-right-[230px] max-[700px]:-bottom-[150px] max-[700px]:h-[330px] max-[700px]:w-[330px]" aria-hidden="true">
-          <div className="absolute inset-0 rounded-full border border-[rgba(243,184,63,0.18)] after:absolute after:-inset-px after:scale-[1.15] after:rounded-full after:border after:border-dashed after:border-[rgba(243,184,63,0.15)] after:content-['']" />
-          <div className="absolute top-[45px] left-[45px] h-[280px] w-[280px] rounded-full border border-[rgba(243,184,63,0.11)]" />
-        </div>
-
         <div className="relative z-[2] mx-auto w-[min(100%_-_48px,1380px)] py-[78px] pb-[88px] max-[900px]:w-[min(100%_-_48px,1380px)] max-[900px]:pt-[70px] max-[900px]:pb-[78px] max-[700px]:w-[min(100%_-_32px,1380px)] max-[700px]:pt-[55px] max-[700px]:pb-[65px]">
           <SignalMark />
 

@@ -88,7 +88,7 @@ export default function BatchPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#151619] text-[#efeee9]">
+    <main className="min-h-screen text-[#efeee9]">
       <div className="mx-auto max-w-[1080px] px-6 pb-24 pt-12 md:px-10 md:pt-16">
         <header className="mb-8">
           <p className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.18em] text-[#f3b83f]">Pengujian</p>

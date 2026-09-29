@@ -393,11 +393,7 @@ export default function EmbedPage() {
   function handleMessageChange(
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) {
-    const textarea = event.currentTarget;
-
-    setMessage(textarea.value);
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
+    setMessage(event.currentTarget.value);
   }
 
   function handleResetImage() {
@@ -518,7 +514,7 @@ export default function EmbedPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#151619] text-[#efeee9]">
+    <main className="min-h-screen text-[#efeee9]">
       <div className="mx-auto max-w-[920px] px-6 pb-24 pt-12 md:px-10 md:pt-16">
 
         {/* HEADER */}
@@ -726,7 +722,7 @@ export default function EmbedPage() {
               value={message}
               onChange={handleMessageChange}
               placeholder="Tulis pesan yang ingin disembunyikan..."
-              className={`min-h-[150px] w-full resize-none overflow-hidden rounded-2xl border bg-[#1d1f24] px-4 py-4 text-[0.9rem] leading-6 text-[#efeee9] outline-none transition placeholder:text-[#55565b] ${
+              className={`field-sizing-content min-h-[150px] max-h-[754px] w-full resize-none overflow-y-auto rounded-2xl border bg-[#1d1f24] px-4 py-4 text-[0.9rem] leading-6 text-[#efeee9] outline-none transition placeholder:text-[#55565b] ${
                 overLimit
                   ? "border-[#c66a6a] focus:border-[#b54f4f]"
                   : "border-[#303238] focus:border-[#f3b83f]"
@@ -794,24 +790,6 @@ export default function EmbedPage() {
               </span>
             </div>
           </section>
-
-          {/* LOCAL SESSION */}
-          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#303238] bg-[#1d1f24] px-4 py-3">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4e9b63] opacity-40" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4e9b63]" />
-              </span>
-
-              <span className="font-mono text-[0.67rem] font-medium uppercase tracking-[0.12em] text-[#98999e]">
-                Sesi lokal aktif
-              </span>
-            </div>
-
-            <span className="font-mono text-[0.62rem] text-[#55565b]">
-              TANPA LOG
-            </span>
-          </div>
 
           {/* EMBED BUTTON */}
           <button
