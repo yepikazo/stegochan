@@ -16,6 +16,12 @@ export interface BatchMessage {
 
 export type BatchStatus = "OK" | "SKIP" | "FAIL";
 
+export interface BatchHistogram {
+  r: number[];
+  g: number[];
+  b: number[];
+}
+
 export interface BatchResult {
   key: string;
   imageName: string;
@@ -28,6 +34,8 @@ export interface BatchResult {
   psnr: number | null;
   pass30: boolean | null;
   histDist: number | null;
+  histCover: BatchHistogram | null;
+  histStego: BatchHistogram | null;
   timeMs: number | null;
   status: BatchStatus;
   note: string;

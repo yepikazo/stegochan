@@ -97,7 +97,7 @@ export default function BatchPage() {
           </h1>
           <p className="mt-4 max-w-[820px] text-[0.96rem] leading-7 text-[#98999e]">
             Unggah beberapa cover, siapkan 3 pesan, pilih mode m-bit, jalankan sekali lalu unduh workbook
-            XLSX berisi sheet <span className="font-mono text-[0.8rem] text-[#efeee9]">PSNR_MSE, Uji_JPEG, Metadata</span>.
+            XLSX berisi sheet <span className="font-mono text-[0.8rem] text-[#efeee9]">Cover, PSNR_MSE, Uji_JPEG, Metadata</span>.
             Semua proses lokal di browser.
           </p>
         </header>

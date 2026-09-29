@@ -1,6 +1,6 @@
-import { calculateMse, calculatePsnr, hideMessage } from "@/lib/stego";
+import { calculateMse, calculatePsnr, computeHistogram, hideMessage } from "@/lib/stego";
 import type { BitsPerChannel } from "@/lib/stego/types";
-import { histogramDistance } from "./utils";
+import { histogramDistanceFromHist } from "./utils";
 import type { BatchCombo, BatchResult } from "./types";
 
 export interface RunBatchOptions {
@@ -33,6 +33,8 @@ export async function runBatchCombos({ combos, password, shouldCancel, onProgres
         psnr: null,
         pass30: null,
         histDist: null,
+        histCover: null,
+        histStego: null,
         timeMs: null,
         status: "SKIP",
         note: "Melebihi kapasitas",
@@ -47,6 +49,8 @@ export async function runBatchCombos({ combos, password, shouldCancel, onProgres
         });
         const mse = calculateMse(combo.img.imageData, stego);
         const psnr = calculatePsnr(combo.img.imageData, stego);
+        const histCover = computeHistogram(combo.img.imageData);
+        const histStego = computeHistogram(stego);
         out.push({
           key,
           imageName: combo.img.name,
@@ -58,7 +62,9 @@ export async function runBatchCombos({ combos, password, shouldCancel, onProgres
           mse,
           psnr,
           pass30: psnr >= 30,
-          histDist: histogramDistance(combo.img.imageData, stego),
+          histDist: histogramDistanceFromHist(histCover, histStego, combo.img.width * combo.img.height),
+          histCover,
+          histStego,
           timeMs: performance.now() - startedAt,
           status: "OK",
           note: "",
@@ -76,6 +82,8 @@ export async function runBatchCombos({ combos, password, shouldCancel, onProgres
           psnr: null,
           pass30: null,
           histDist: null,
+          histCover: null,
+          histStego: null,
           timeMs: performance.now() - startedAt,
           status: "FAIL",
           note: err instanceof Error ? err.message : "Gagal embed",
