@@ -18,6 +18,21 @@ import {
 } from "@/lib/stego";
 import type { BitsPerChannel } from "@/lib/stego/types";
 
+const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg"];
+const IMAGE_ACCEPT = ACCEPTED_IMAGE_TYPES.join(",");
+const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
+
+function isSupportedImage(file: File) {
+  const fileName = file.name.toLowerCase();
+
+  return (
+    ACCEPTED_IMAGE_TYPES.includes(file.type) ||
+    fileName.endsWith(".png") ||
+    fileName.endsWith(".jpg") ||
+    fileName.endsWith(".jpeg")
+  );
+}
+
 function ImageIcon() {
   return (
     <svg
@@ -132,6 +147,92 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const ZOOM_LEVELS = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3] as const;
+const ZOOM_SIZE_CLASSES = [
+  "w-full h-full",
+  "w-[125%] h-[125%]",
+  "w-[150%] h-[150%]",
+  "w-[175%] h-[175%]",
+  "w-[200%] h-[200%]",
+  "w-[225%] h-[225%]",
+  "w-[250%] h-[250%]",
+  "w-[275%] h-[275%]",
+  "w-[300%] h-[300%]",
+] as const;
+const HISTOGRAM_CHANNELS = [
+  { title: "R", key: "r", color: "red" },
+  { title: "G", key: "g", color: "green" },
+  { title: "B", key: "b", color: "blue" },
+] as const;
+
+function ComparisonImage({
+  src,
+  alt,
+  label,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+}) {
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const zoom = ZOOM_LEVELS[zoomIndex];
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
+          {label}
+        </p>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setZoomIndex((current) => Math.max(0, current - 1))}
+            disabled={zoomIndex === 0}
+            aria-label={`Perkecil ${label}`}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#303238] bg-[#1d1f24] font-mono text-base text-[#efeee9] transition hover:border-[#6e6f74] hover:bg-[#25272d] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            −
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setZoomIndex(0)}
+            aria-label={`Atur ulang zoom ${label}`}
+            title="Atur ulang zoom"
+            className="min-w-[54px] rounded-lg px-1 py-2 font-mono text-[0.65rem] text-[#98999e] hover:text-[#f3b83f]"
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              setZoomIndex((current) =>
+                Math.min(ZOOM_LEVELS.length - 1, current + 1)
+              )
+            }
+            disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+            aria-label={`Perbesar ${label}`}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#303238] bg-[#1d1f24] font-mono text-base text-[#efeee9] transition hover:border-[#6e6f74] hover:bg-[#25272d] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div className="h-[260px] overflow-auto rounded-2xl border border-[#303238] bg-[#25272d] p-3 sm:h-[300px]">
+        <div
+          className={`flex min-h-full min-w-full items-center justify-center ${ZOOM_SIZE_CLASSES[zoomIndex]}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt={alt} className="h-full w-full object-contain" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EmbedPage() {
   const {
     imageData,
@@ -177,6 +278,15 @@ export default function EmbedPage() {
   const [dragActive, setDragActive] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function clearResult() {
+    setResultUrl(null);
+    setResultBlob(null);
+    setMetrics(null);
+    setTradeoff(null);
+    setLsbUrls(null);
+    setHistograms(null);
+  }
 
   const capacity = useMemo(
     () =>
@@ -240,32 +350,19 @@ export default function EmbedPage() {
   }, [password]);
 
   async function handleFile(file: File) {
-    const validType =
-      file.type === "image/png" ||
-      file.type === "image/jpeg" ||
-      file.name.toLowerCase().endsWith(".png") ||
-      file.name.toLowerCase().endsWith(".jpg") ||
-      file.name.toLowerCase().endsWith(".jpeg");
-
-    if (!validType) {
+    if (!isSupportedImage(file)) {
       setError("Format gambar harus PNG atau JPG.");
       return;
     }
 
-    if (file.size > 20 * 1024 * 1024) {
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
       setError("Ukuran gambar maksimal 20 MB.");
       return;
     }
 
     setError(null);
     setSelectedFile(file);
-
-    setResultUrl(null);
-    setResultBlob(null);
-    setMetrics(null);
-    setTradeoff(null);
-    setLsbUrls(null);
-    setHistograms(null);
+    clearResult();
 
     await loadFile(file);
   }
@@ -293,15 +390,20 @@ export default function EmbedPage() {
     }
   }
 
+  function handleMessageChange(
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) {
+    const textarea = event.currentTarget;
+
+    setMessage(textarea.value);
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
   function handleResetImage() {
     reset();
     setSelectedFile(null);
-    setResultUrl(null);
-    setResultBlob(null);
-    setMetrics(null);
-    setTradeoff(null);
-    setLsbUrls(null);
-    setHistograms(null);
+    clearResult();
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -321,10 +423,7 @@ export default function EmbedPage() {
 
     setLoading(true);
     setError(null);
-    setResultUrl(null);
-    setMetrics(null);
-    setLsbUrls(null);
-    setHistograms(null);
+    clearResult();
 
     try {
       const stego = await hideMessage(imageData, message, {
@@ -480,14 +579,14 @@ export default function EmbedPage() {
                 onDrop={handleDrop}
                 className={`group flex min-h-[245px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition ${
                   dragActive
-                    ? "border-[#c28722] bg-[#e4d9bd]"
-                    : "border-[#bcb4a2] bg-[#eee8d9] hover:border-[#968d79] hover:bg-[#e8e0ce]"
+                    ? "border-[#f3b83f] bg-[#25272d]"
+                    : "border-[#303238] bg-[#1d1f24] hover:border-[#f3b83f] hover:bg-[#25272d]"
                 }`}
               >
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/png,image/jpeg,image/jpg"
+                  accept={IMAGE_ACCEPT}
                   onChange={handleInputChange}
                   className="hidden"
                 />
@@ -558,7 +657,7 @@ export default function EmbedPage() {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/png,image/jpeg,image/jpg"
+                      accept={IMAGE_ACCEPT}
                       onChange={handleInputChange}
                       className="hidden"
                     />
@@ -596,8 +695,8 @@ export default function EmbedPage() {
                     key={mode}
                     className={`flex cursor-pointer items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                       active
-                        ? "border-[#c28722] bg-[#e4c47e] text-[#30230e]"
-                        : "border-[#c7bfad] bg-[#f0eadc] text-[#656056] hover:bg-[#e8e0ce]"
+                        ? "border-[#f3b83f] bg-[#3a3020] text-[#f3b83f]"
+                        : "border-[#303238] bg-[#1d1f24] text-[#98999e] hover:border-[#6e6f74] hover:bg-[#25272d]"
                     }`}
                   >
                     <input
@@ -625,12 +724,12 @@ export default function EmbedPage() {
 
             <textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleMessageChange}
               placeholder="Tulis pesan yang ingin disembunyikan..."
-              className={`min-h-[150px] w-full resize-y rounded-2xl border bg-[#f0eadc] px-4 py-4 text-[0.9rem] leading-6 text-[#272622] outline-none transition placeholder:text-[#a29b8d] ${
+              className={`min-h-[150px] w-full resize-none overflow-hidden rounded-2xl border bg-[#1d1f24] px-4 py-4 text-[0.9rem] leading-6 text-[#efeee9] outline-none transition placeholder:text-[#55565b] ${
                 overLimit
                   ? "border-[#c66a6a] focus:border-[#b54f4f]"
-                  : "border-[#c7bfad] focus:border-[#b78326]"
+                  : "border-[#303238] focus:border-[#f3b83f]"
               }`}
             />
 
@@ -756,35 +855,17 @@ export default function EmbedPage() {
 
             {/* IMAGE COMPARISON */}
             <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
-                  Cover image
-                </p>
+              <ComparisonImage
+                src={previewUrl ?? resultUrl}
+                alt="Cover image"
+                label="Cover image"
+              />
 
-                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#303238] bg-[#25272d] p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewUrl ?? resultUrl}
-                    alt="Cover image"
-                    className="max-h-[300px] w-full object-contain"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
-                  Stego image
-                </p>
-
-                <div className="flex min-h-[250px] items-center justify-center overflow-hidden rounded-2xl border border-[#303238] bg-[#25272d] p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resultUrl}
-                    alt="Stego image"
-                    className="max-h-[300px] w-full object-contain"
-                  />
-                </div>
-              </div>
+              <ComparisonImage
+                src={resultUrl}
+                alt="Stego image"
+                label="Stego image"
+              />
             </div>
 
             {/* METRICS */}
@@ -915,57 +996,27 @@ export default function EmbedPage() {
                 </p>
 
                 <div className="mt-5 space-y-6">
-                  <div>
-                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
-                      Cover image
-                    </p>
+                  {[
+                    { label: "Cover image", data: histograms.cover },
+                    { label: "Stego image", data: histograms.stego },
+                  ].map(({ label, data }) => (
+                    <div key={label}>
+                      <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
+                        {label}
+                      </p>
 
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <HistogramChart
-                        title="R"
-                        data={histograms.cover.r}
-                        color="red"
-                      />
-
-                      <HistogramChart
-                        title="G"
-                        data={histograms.cover.g}
-                        color="green"
-                      />
-
-                      <HistogramChart
-                        title="B"
-                        data={histograms.cover.b}
-                        color="blue"
-                      />
+                      <div className="grid gap-3 md:grid-cols-3">
+                        {HISTOGRAM_CHANNELS.map(({ title, key, color }) => (
+                          <HistogramChart
+                            key={key}
+                            title={title}
+                            data={data[key]}
+                            color={color}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <p className="mb-3 font-mono text-[0.67rem] uppercase tracking-[0.1em] text-[#6e6f74]">
-                      Stego image
-                    </p>
-
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <HistogramChart
-                        title="R"
-                        data={histograms.stego.r}
-                        color="red"
-                      />
-
-                      <HistogramChart
-                        title="G"
-                        data={histograms.stego.g}
-                        color="green"
-                      />
-
-                      <HistogramChart
-                        title="B"
-                        data={histograms.stego.b}
-                        color="blue"
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
