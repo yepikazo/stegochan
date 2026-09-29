@@ -186,10 +186,6 @@ export default function EmbedPage() {
           imageData.height,
           lsbMode
         )
-          imageData.width,
-          imageData.height,
-          lsbMode
-        )
         : 0,
     [imageData, lsbMode]
   );
@@ -205,7 +201,6 @@ export default function EmbedPage() {
     if (!password) {
       return {
         label: "Belum diisi",
-        width: "w-0",
         width: "w-0",
       };
     }
@@ -855,7 +850,9 @@ export default function EmbedPage() {
                     </p>
 
                     <p className="mt-1 text-xs text-[#888174]">
-                      1-bit: {tradeoff.psnr1bit.toFixed(2)} dB
+                      1-bit: {tradeoff.psnr1bit === null
+                        ? "Tidak tersedia"
+                        : `${tradeoff.psnr1bit.toFixed(2)} dB`}
                     </p>
                   </div>
                 </div>
